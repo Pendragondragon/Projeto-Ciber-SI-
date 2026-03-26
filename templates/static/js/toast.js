@@ -1,4 +1,4 @@
-function mostrarNotificacao(mensagem, tipo = 'sucesso') {
+function mostrarNotificacao(mensagem, tipo = 'sucess') {
     let container = document.querySelector('.toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -7,8 +7,8 @@ function mostrarNotificacao(mensagem, tipo = 'sucesso') {
     }
 
     const toast = document.createElement('div');
-    toast.className = `toast ${tipo}`;
-    toast.textContent = mensagem;
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
 
     container.appendChild(toast);
 
