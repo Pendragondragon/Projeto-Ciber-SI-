@@ -4,7 +4,13 @@
 <head>
     <title>Login</title>
     <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com" ></script>
+    <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
+     <script
+        src="{{ url_for('static', filename='js/index.js') }}"
+        type="module"
+        defer
+    ></script>
 </head>
 
 <body class="h-full">
@@ -18,7 +24,7 @@
         </div>
 
         <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-            <form action="#" method="POST" class="space-y-6">
+            <form id="login-form" action="#" method="POST" class="space-y-6">
                 <div>
                     <label for="email" class="block text-sm/6 font-medium text-gray-100">Email address</label>
                     <div class="mt-2">
@@ -41,7 +47,7 @@
                 </div>
 
                 <div>
-                    <button type="submit"
+                    <button type="submit" id="btnlogin"
                         class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">Sign
                         in</button>
                 </div>
