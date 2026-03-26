@@ -13,7 +13,7 @@ document.getElementById('login-form').addEventListener('submit', function(event)
 
     // validacao
     if (!email || !password) {
-        alert('Tem de inserir o email e a password.');
+        alert('It has to insert email and password.');
         return;
     }
 
@@ -29,19 +29,19 @@ document.getElementById('login-form').addEventListener('submit', function(event)
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            mostrarNotificacao('Login efetuado com sucesso!', 'sucesso');
+            mostrarNotificacao('Successful Login!', 'success');
             
             setTimeout(() => {
                 window.location.href = "/inicio.html";
             }, 1500);
         } else {
-            const mensagem = data.message || data.error || 'Credenciais inválidas.';
-            mostrarNotificacao(mensagem, 'erro');
+            const mensagem = data.message || data.error || 'Invalid Values.';
+            mostrarNotificacao(mensagem, 'error');
         }
     })
     .catch(error => {
-        console.error('Erro durante o login:', error);
-        alert('Ocorreu um erro durante o login. Por favor, tente novamente mais tarde.');
+        console.error('Error in login:', error);
+        alert('There was an error in login. Please try again later.');
     });
 });
 
