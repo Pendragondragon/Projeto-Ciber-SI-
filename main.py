@@ -14,10 +14,9 @@ def home():
 
 @app.get("/login")
 def login():
-    return FileResponse(BASE_DIR / "index.html")
+    return FileResponse(BASE_DIR / "templates" / "login.html")
 
 
 @app.get("/style.css")
 def style():
-    return FileResponse(BASE_DIR / "style.css")
-
+    return FileResponse(BASE_DIR / "static" / "css" / "input.css")
