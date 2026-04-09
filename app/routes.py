@@ -4,11 +4,11 @@ from flask_bcrypt import Bcrypt
 
 bcrypt = Bcrypt(app)
 
-@app.route("/auth/login")
+@app.route("/login")
 def login():
     return render_template("login.html")
 
-@app.route("/auth/register", methods=["GET"])
+@app.route("/register", methods=["GET"])
 def register_page():
     return render_template("inicio.html")
 
