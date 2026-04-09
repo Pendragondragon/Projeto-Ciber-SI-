@@ -1,5 +1,5 @@
 //alterar o url para estar certo
-const url = "";
+const url = "/auth";
 
 document.getElementById('registo-form').addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent the default form submission
