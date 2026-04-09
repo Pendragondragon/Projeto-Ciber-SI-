@@ -1,7 +1,7 @@
 //alterar o url para estar certo
-const url = "/auth";
+const url = "";
 
-document.getElementById('registo-form').addEventListener('submit', function(event) {
+document.getElementById('registo-form').addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent the default form submission
 
     const username = document.getElementById('username').value;
@@ -15,7 +15,7 @@ document.getElementById('registo-form').addEventListener('submit', function(even
         return;
     }
 
-    if(!(password === confirmpassword)){
+    if (!(password === confirmpassword)) {
         alert('Passwords dont match.');
         return;
     }
@@ -29,21 +29,20 @@ document.getElementById('registo-form').addEventListener('submit', function(even
         credentials: 'include',
         body: JSON.stringify({ username, email, password })
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            mostrarNotificacao('Successful Sign In!', 'success');
-            
-            setTimeout(() => {
-                window.location.href = "/inicio.html";
-            }, 1500);
-        } else {
-            const mensagem = data.message || data.error || 'Invalid Values.';
-            mostrarNotificacao(mensagem, 'error');
-        }
-    })
-    .catch(error => {
-        console.error('Error in login:', error);
-        alert('There was an error in login. Please try again later.');
-    });
+        .then(response => {
+            console.log("Status:", response.status);  
+            return response.json();
+        })
+        .then(data => {
+            console.log("Data:", data); 
+            if (data.success) {
+                mostrarNotificacao('Successful Sign In!', 'success');
+                setTimeout(() => {
+                    window.location.href = "/register"; 
+                }, 1500);
+            } else {
+                const mensagem = data.message || data.error || 'Invalid Values.';
+                mostrarNotificacao(mensagem, 'error');
+            }
+        });
 });
