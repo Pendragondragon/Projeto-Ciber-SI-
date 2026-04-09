@@ -1,7 +1,7 @@
 <!doctype html>
 <html class="h-full bg-gray-900">
   <head>
-    <title>Sign In</title>
+    <title>Sign Up</title>
     <link
       href="{{ url_for('static', filename='css/output.css') }}"
       rel="stylesheet"
@@ -22,7 +22,7 @@
     <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <div class="sm:mx-auto sm:w-full sm:max-w-sm">
         <img
-          src="/templates/imagens/HiPaint_1774551850472.png"
+          src="imagens/HiPaint_1774551850472.png"
           alt="Your Company"
           class="mx-auto h-10 w-auto"
         />
@@ -96,10 +96,15 @@
             <button
               type="submit"
               class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
-              Sign in
+              Sign up
             </button>
           </div>
         </form>
+
+        <p class="mt-10 text-center text-sm/6 text-gray-400">
+          Already a member?
+          <a href="#" class="font-semibold text-indigo-400 hover:text-indigo-300">Sign in</a>
+        </p>
       </div>
     </div>
   </body>
