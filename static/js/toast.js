@@ -7,8 +7,8 @@ function mostrarNotificacao(mensagem, tipo = 'sucess') {
     }
 
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
+    toast.className = `toast ${tipo}`;
+    toast.textContent = mensagem;
 
     container.appendChild(toast);
 
