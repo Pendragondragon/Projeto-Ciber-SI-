@@ -9,11 +9,11 @@ def login():
     return render_template("login.html")
 
 @app.route("/register", methods=["GET"])
-def register_page():
-    return render_template("inicio.html")
-
-@app.route("/auth/register", methods=["POST"])
 def register():
+    return render_template("signup.html")
+
+@app.route("/auth/registerUser", methods=["POST"])
+def registerUser():
     data = request.get_json()
     username = data.get("username")
     email = data.get("email")
@@ -39,3 +39,12 @@ def register():
     db.commit()
 
     return jsonify({"success": True, "message": "Utilizador registado com sucesso!"}), 201
+
+@app.route("/", methods=["GET"])
+def check_jwt():
+    jwt = request.cookies.get('token')
+    
+    if not jwt:
+        return render_template("login.html")
+    return render_template("inicio.html")
+

@@ -3,11 +3,11 @@
 
 <head>
     <title>SAFE-DEPOSIT-BOX</title>
-    <link href="{{ url_for('static', filename='css/output.css') }}" rel="stylesheet">
+    <link href="{{ url_for('resources/static', filename='css/input.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/login.js') }}" type="module" defer></script>
+    <script src="{{ url_for('resources/static', filename='js/toast.js') }}" defer></script>
+    <script src="{{ url_for('resources/static', filename='js/login.js') }}" type="module" defer></script>
 </head>
 
 <body class="h-full">
@@ -34,7 +34,7 @@
                 </div>
                 <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                     <div class="flex shrink-0 items-center">
-                        <img src="imagens/HiPaint_1774551850472.png" alt="logo" class="mx-auto h-10 w-auto" />
+                        <img src="{{ url_for('static', filename='imagens/iconFundo.png') }}" alt="logo" class="mx-auto h-10 w-auto" />
                     </div>
                     <div class="hidden sm:ml-6 sm:block">
                         <div class="flex space-x-4">

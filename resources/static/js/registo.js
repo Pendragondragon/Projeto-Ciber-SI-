@@ -21,7 +21,7 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
     }
 
     // iniciar pedido de registo
-    fetch(url + '/register', {
+    fetch(url + '/registerUser', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
