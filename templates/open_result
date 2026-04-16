@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Resultado da abertura do cofre</h1>
+
+  <div class="card">
+    <p><strong>ID do cofre:</strong> {{ vault_id }}</p>
+    <p><strong>Cifra usada:</strong> {{ cipher_choice }}</p>
+
+    <p>
+      Verificação do HMAC:
+      {% if hmac_ok %}
+        <span class="ok">OK</span>
+      {% else %}
+        <span class="bad">FALHOU</span>
+      {% endif %}
+    </p>
+
+    <p>
+      Decifra:
+      {% if decrypt_ok %}
+        <span class="ok">OK</span>
+      {% else %}
+        <span class="bad">FALHOU</span>
+      {% endif %}
+    </p>
+
+    <p>
+      Verificação da assinatura digital do texto-limpo:
+      {% if sig_ok %}
+        <span class="ok">OK</span>
+      {% else %}
+        <span class="bad">FALHOU</span>
+      {% endif %}
+    </p>
+  </div>
+
+  {% if error %}
+    <div class="card">
+      <p class="bad">{{ error }}</p>
+    </div>
+  {% endif %}
+
+  {% if message %}
+    <div class="card">
+      <p><strong>Mensagem decifrada:</strong></p>
+      <pre>{{ message }}</pre>
+    </div>
+  {% endif %}
+{% endblock %}
