@@ -1,7 +1,7 @@
 from flask import Flask, g
 import sqlite3
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='./resources/templates', static_folder='./resources/static')
 
 from app.routes import *
 

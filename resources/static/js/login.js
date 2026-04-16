@@ -50,7 +50,7 @@ document.getElementById('login-form').addEventListener('submit', function(event)
 //foi validado pelo middleware -> token valido
 //e que existe na base de dados -> vem com dados associados
 function isLoggedIn(){
-    fetch(url + '/check', {
+    fetch('/', {
         //manda o jwt token atraves de httponly cookies
         credentials: 'include' 
     })
