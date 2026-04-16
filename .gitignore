@@ -1,11 +1,12 @@
 # nix shell
 *.nix
 
+# Ambientes virtuais
 .venv/
 venv/
-__pycache__/
-*.db
 
+# Python cache
 __pycache__/
 *.pyc
-database.db
+# Banco de dados local
+*.db
