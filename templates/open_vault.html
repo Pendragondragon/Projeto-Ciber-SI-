@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+  <h1>Abrir cofre</h1>
+
+  {% if error %}
+    <p class="bad">{{ error }}</p>
+  {% endif %}
+
+  <form method="post">
+    <label for="vault_id">ID do cofre</label>
+    <input id="vault_id" name="vault_id" type="text" placeholder="Ex.: 1">
+
+    <label for="secret">Segredo para abrir o cofre</label>
+    <textarea id="secret" name="secret" placeholder="Cola aqui a chave Base64, a palavra-passe, ou a chave privada RSA PEM"></textarea>
+
+    <button type="submit">Abrir</button>
+  </form>
+
+  <div class="card">
+    <p><strong>Formato esperado no campo segredo:</strong></p>
+    <ul>
+      <li>Modo chave simétrica: chave AES em Base64</li>
+      <li>Modo password: a palavra-passe original</li>
+      <li>Modo RSA: chave privada RSA PEM completa</li>
+    </ul>
+  </div>
+{% endblock %}
