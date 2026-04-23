@@ -34,7 +34,8 @@
                                     <div class="shrink-0 text-base text-gray-400 select-none sm:text-sm/10">
                                     </div>
                                     <input id="title" type="text" name="title" placeholder=""
-                                        class="block min-w-0 grow bg-transparent py-1.5 pr-3 pl-1 text-base text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6" />
+                                        class="block min-w-0 grow bg-transparent py-1.5 pr-3 pl-1 text-base text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
+                                        required />
                                 </div>
                             </div>
                         </div>
@@ -44,7 +45,8 @@
                             <div class="mt-2">
                                 <textarea id="message" name="message" rows="10"
                                     placeholder="Write your message here to store in the vault..."
-                                    class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"></textarea>
+                                    class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                                    required></textarea>
                             </div>
                         </div>
                     </div>
@@ -56,7 +58,8 @@
                             <label for="method" class="block text-sm/6 font-medium text-white">Protection Method</label>
                             <div class="mt-2 grid grid-cols-1">
                                 <select id="method" name="method" autocomplete="method-name"
-                                    class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pr-8 pl-3 text-base text-white outline-1 -outline-offset-1 outline-white/10 *:bg-gray-800 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6">
+                                    class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pr-8 pl-3 text-base text-white outline-1 -outline-offset-1 outline-white/10 *:bg-gray-800 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                                    required>
                                     <option value="random-key">Random Key (Base64)</option>
                                     <option value="password">User Password</option>
                                     <option value="rsa">RSA (system generates key pair)</option>
@@ -71,7 +74,7 @@
                         </div>
 
                         <div id="passDiv" class="col-span-full">
-                            <label for="pass" class="block text-sm/6 font-medium text-white">Password</label>
+                            <label for="pass" class="block text-sm/6 font-medium text-white" required>Password</label>
                             <div class="mt-2">
                                 <input id="pass" type="text" name="pass" autocomplete="pass"
                                     class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6" />
@@ -81,19 +84,17 @@
                             <div class="mt-6 space-y-10">
                                 <fieldset>
                                     <legend class="text-sm/6 font-semibold text-white">HMAC's Hash</legend>
-                                    <p class="mt-1 text-sm/6 text-gray-400">
-                                    </p>
                                     <div class="mt-6 space-y-6">
                                         <div class="flex items-center gap-x-3">
-                                            <input id="sig_hash" type="radio" name="sig_hash"
-                                                class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:border-white/5 disabled:bg-white/10 disabled:before:bg-white/20 forced-colors:appearance-auto forced-colors:before:hidden" />
-                                            <label for="sha256"
+                                            <input id="hmac_sha256" value="sha256" type="radio" name="sig_hash" required
+                                                class="relative size-4 ... " />
+                                            <label for="hmac_sha256"
                                                 class="block text-sm/6 font-medium text-white">SHA256</label>
                                         </div>
                                         <div class="flex items-center gap-x-3">
-                                            <input id="sig_hash" type="radio" name="sig_hash"
-                                                class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:border-white/5 disabled:bg-white/10 disabled:before:bg-white/20 forced-colors:appearance-auto forced-colors:before:hidden" />
-                                            <label for="sha512"
+                                            <input id="hmac_sha512" value="sha512" type="radio" name="sig_hash"
+                                                class="relative size-4 ... " />
+                                            <label for="hmac_sha512"
                                                 class="block text-sm/6 font-medium text-white">SHA512</label>
                                         </div>
                                     </div>
@@ -101,19 +102,18 @@
 
                                 <fieldset>
                                     <legend class="text-sm/6 font-semibold text-white">Hash Signature</legend>
-                                    <p class="mt-1 text-sm/6 text-gray-400">
-                                    </p>
                                     <div class="mt-6 space-y-6">
                                         <div class="flex items-center gap-x-3">
-                                            <input id="push-everything" type="radio" name="push-notifications"
-                                                class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:border-white/5 disabled:bg-white/10 disabled:before:bg-white/20 forced-colors:appearance-auto forced-colors:before:hidden" />
-                                            <label for="sha256"
+                                            <input id="sig_sha256" value="sha256" type="radio" name="hash_signature"
+                                                required
+                                                class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ... " />
+                                            <label for="sig_sha256"
                                                 class="block text-sm/6 font-medium text-white">sha256</label>
                                         </div>
                                         <div class="flex items-center gap-x-3">
-                                            <input id="push-email" type="radio" name="push-notifications"
-                                                class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:border-white/5 disabled:bg-white/10 disabled:before:bg-white/20 forced-colors:appearance-auto forced-colors:before:hidden" />
-                                            <label for="sha512"
+                                            <input id="sig_sha512" value="sha512" type="radio" name="hash_signature"
+                                                class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ... " />
+                                            <label for="sig_sha512"
                                                 class="block text-sm/6 font-medium text-white">sha512</label>
                                         </div>
                                     </div>
@@ -125,7 +125,8 @@
                             <label for="rsa_bits" class="block text-sm/6 font-medium text-white">RSA Size</label>
                             <div class="mt-2 grid grid-cols-1">
                                 <select id="rsa_bits" name="rsa_bits" autocomplete="rsa_bits-name"
-                                    class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pr-8 pl-3 text-base text-white outline-1 -outline-offset-1 outline-white/10 *:bg-gray-800 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6">
+                                    class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pr-8 pl-3 text-base text-white outline-1 -outline-offset-1 outline-white/10 *:bg-gray-800 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                                    required>
                                     <option value="2048">2048</option>
                                     <option value="3072">3072</option>
                                     <option value="4096">4096</option>
@@ -142,7 +143,8 @@
                 </div>
 
                 <div class="mt-6 flex items-center justify-end gap-x-6">
-                    <a href="{{ url_for('deposit') }}" class="text-sm font-semibold text-white hover:text-gray-300">Cancel</a>
+                    <a href="{{ url_for('deposit') }}"
+                        class="text-sm font-semibold text-white hover:text-gray-300">Cancel</a>
                     <button id="createVault" type="submit"
                         class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">Save</button>
                 </div>
