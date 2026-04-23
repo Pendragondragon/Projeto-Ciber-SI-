@@ -12,6 +12,18 @@ def login():
 def register():
     return render_template("signup.html")
 
+@app.route("/index")
+def index():
+    return render_template("base.html")
+
+@app.route("/deposit")
+def deposit():
+    return render_template("new_message.html")
+
+@app.route("/open_vault")
+def open_vault():
+    return render_template("open_vault.html")
+
 @app.route("/auth/registerUser", methods=["POST"])
 def registerUser():
     data = request.get_json()
