@@ -1,28 +1,22 @@
 <!doctype html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAFE-DEPOSIT-BOX</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/input.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/navstyles.css') }}" />
-    <script src="{{ url_for('static', filename='js/usericon.js') }}" defer></script>
-    {% block scripts %}{% endblock %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="./navstyles.css" />
 </head>
 
 <body>
     <nav class="navbar">
         <div class="container">
             <div class="nav-wrapper">
-
+                
                 <div class="mobile-menu-toggle">
-                    <button type="button" aria-label="Open main menu" id="menu-button">
-                        <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round"
-                                stroke-linejoin="round" />
-                        </svg>
+                    <button type="button" id="menu-button">
+                        <i class="fa-solid fa-bars icon-open"></i>
                     </button>
                 </div>
 
@@ -38,17 +32,13 @@
                 </div>
 
                 <div class="nav-actions">
-                    <button type="button" class="notif-btn" aria-label="View notifications">
-                        <svg class="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path
-                                d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-                                stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+                    <button type="button" class="notif-btn">
+                        <i class="fa-regular fa-bell"></i>
                     </button>
 
                     <div class="profile-dropdown">
                         <button class="profile-btn" id="user-menu-button">
-                            <div class="avatar-placeholder"></div>
+                            <i class="fa-solid fa-circle-user"></i>
                         </button>
                         <div class="dropdown-menu" id="user-menu">
                             <a href="#">Your profile</a>
@@ -61,23 +51,27 @@
         </div>
 
         <div class="mobile-nav-content" id="mobile-menu" hidden>
-            <a href="{{ url_for('index') }}">Home</a>
-            <a href="{{ url_for('deposit') }}">Message</a>
-            <a href="{{ url_for('open_vault') }}">Open Vault</a>
-            <a href="#" class="user-link">Profile
-                <div class="panel">
-                    <p><a href="#">Your profile</a></p>
-                    <p><a href="#">Settings</a></p>
-                    <p><a href="#">Sign out</a></p>
+            <div class="mobile-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('deposit') }}">Message</a>
+                <a href="{{ url_for('open_vault') }}">Open Vault</a>
+            </div>
+            
+            <div class="user-link-wrapper">
+                <button class="user-link-toggle" id="mobile-user-btn">
+                    <i class="fa-solid fa-user-gear"></i> Profile Settings
+                </button>
+                <div class="panel" id="mobile-user-panel">
+                    <a href="#">Your profile</a>
+                    <a href="#">Settings</a>
+                    <a href="#">Sign out</a>
                 </div>
-            </a>
+            </div>
         </div>
     </nav>
-    {% block content %}
-    {% endblock %}
-    <main class="main-content">
-    </main>
 
+    <main class="main-content"></main>
+
+    <script src="usericon.js"></script>
 </body>
-
 </html>
