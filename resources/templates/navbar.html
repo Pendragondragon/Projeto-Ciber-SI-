@@ -1,19 +1,23 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAFE-DEPOSIT-BOX</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ url_for('static', filename='js/usericon.js') }}" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="./navstyles.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/input.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navstyles.css') }}" />
+     {% block scripts %}{% endblock %}
 </head>
 
 <body>
     <nav class="navbar">
         <div class="container">
             <div class="nav-wrapper">
-                
+
                 <div class="mobile-menu-toggle">
                     <button type="button" id="menu-button">
                         <i class="fa-solid fa-bars icon-open"></i>
@@ -56,7 +60,7 @@
                 <a href="{{ url_for('deposit') }}">Message</a>
                 <a href="{{ url_for('open_vault') }}">Open Vault</a>
             </div>
-            
+
             <div class="user-link-wrapper">
                 <button class="user-link-toggle" id="mobile-user-btn">
                     <i class="fa-solid fa-user-gear"></i> Profile Settings
@@ -72,6 +76,8 @@
 
     <main class="main-content"></main>
 
-    <script src="usericon.js"></script>
+    {% block content %}
+    {% endblock %}
 </body>
+
 </html>
