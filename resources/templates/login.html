@@ -1,3 +1,7 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+
 <!DOCTYPE html>
 <html class="h-full bg-gray-900">
 
@@ -17,8 +21,7 @@
 
     <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
         <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-            <img src="{{ url_for('static', filename='imagens/iconFundo.png') }}" alt="logo"
-                class="mx-auto h-32 w-auto" />
+            
             <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
             <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">Login to your account</h2>
         </div>
@@ -61,3 +64,5 @@
 </body>
 
 </html>
+
+{% endblock %}
