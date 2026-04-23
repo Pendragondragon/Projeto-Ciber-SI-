@@ -2,8 +2,15 @@ const methodSelect = document.getElementById('method');
 const rsa_bits = document.getElementById('rsaDiv');
 const pass = document.getElementById('passDiv');
 
+const BtnCreateVault = document.getElementById('createVault');
+
 document.addEventListener("DOMContentLoaded", async () => {
     setMethodOptionsReset();
+});
+
+BtnCreateVault.addEventListener("click", async () => {
+    const title = document.getElementById('title');
+    const message = document.getElementById('message');
 });
 
 //mostra só as opçoes possiveis de cada metodo

@@ -8,5 +8,9 @@ venv/
 # Python cache
 __pycache__/
 *.pyc
+
 # Banco de dados local
 *.db
+
+# Dot env
+.env
