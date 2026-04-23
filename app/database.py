@@ -8,7 +8,9 @@ cursor.execute("""
         id INTEGER PRIMARY KEY, 
         username TEXT, 
         email TEXT, 
-        password TEXT
+        password TEXT,
+        reset_token TEXT,
+        reset_token_expira TEXT
     )
 """)
 

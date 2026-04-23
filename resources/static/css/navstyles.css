@@ -50,11 +50,7 @@ html, body {
     gap: 1rem;
 }
 
-/* Hide desktop links on small screens */
-@media (max-width: 640px) {
-    .nav-links { display: none; }
-}
-
+/* Desktop Item Styling */
 .nav-item {
     text-decoration: none;
     color: #d1d5db;
@@ -66,7 +62,7 @@ html, body {
 }
 
 .nav-item:hover {
-    background-color: rgba(3, 7, 18, 0.5); /* Gray-950/50 */
+    background-color: rgba(3, 7, 18, 0.5);
     color: #ffffff;
 }
 
@@ -77,51 +73,44 @@ html, body {
     gap: 1rem;
 }
 
-.notif-btn, .menu-button {
+.notif-btn, #menu-button, .profile-btn {
     background: none;
     border: none;
     color: #9ca3af;
     cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 9999px;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s;
 }
 
-.notif-btn:hover { color: #ffffff; }
-
-.icon-bell, .icon-open {
-    width: 1.5rem;
-    height: 1.5rem;
+.notif-btn:hover, #menu-button:hover, .profile-btn:hover {
+    color: #ffffff;
 }
 
-/* Profile Dropdown */
+/* Scaling FontAwesome Icons */
+.fa-bell, .fa-bars, .fa-circle-user, .fa-user-alt {
+    font-size: 1.25rem;
+}
+
+/* Profile Dropdown (Desktop) */
 .profile-dropdown {
     position: relative;
 }
 
-.profile-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-}
-
-.avatar-placeholder {
-    width: 2rem;
-    height: 2rem;
-    background-color: #4b5563;
-    border-radius: 9999px;
-}
-
 .dropdown-menu {
-    display: none; /* Toggle with JS */
+    display: none;
     position: absolute;
     right: 0;
-    top: 2.5rem;
+    top: 2.8rem;
     width: 12rem;
     background-color: #1f2937;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 0.375rem;
-    padding: 0.25rem 0;
+    padding: 0.5rem 0;
     z-index: 50;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
 .dropdown-menu a {
@@ -134,37 +123,53 @@ html, body {
 
 .dropdown-menu a:hover {
     background-color: rgba(255, 255, 255, 0.05);
-}
-
-.user-link {
-    background-color: transparent; 
-    color: #d1d5db;
-    cursor: pointer;
-    padding: 0.75rem;
-    width: 100%;
-    text-align: left;
-    border: none;
-    transition: 0.3s;
-    display: block;
-}
-
-.user-link:hover, .user-link.active {
-    background-color: rgba(255, 255, 255, 0.05);
     color: #fff;
 }
 
-.panel {
-    padding: 0 1rem;
-    background-color: rgba(0, 0, 0, 0.2); /* Darker sub-menu */
+/* Mobile Menu Specifics */
+.mobile-menu-toggle {
     display: none;
-    overflow: hidden;
-    border-radius: 0.375rem;
+}
+
+.mobile-nav-content {
+    background-color: #111827;
+    padding: 0.5rem 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-nav-content a:not(.panel a) {
+    display: block;
+    padding: 0.75rem 0;
+    color: #d1d5db;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+/* Mobile User Accordion */
+.user-link {
+    cursor: pointer;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     margin-top: 0.5rem;
+    padding: 1rem 0;
+}
+
+.user-link i {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #818cf8; /* indigo highlight for the icon */
+}
+
+.panel {
+    display: none;
+    padding-left: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 0.5rem;
 }
 
 .panel p a {
-    padding: 0.5rem 0;
-    font-size: 0.875rem;
+    padding: 0.6rem 0;
+    font-size: 0.9rem;
     color: #9ca3af;
     display: block;
     text-decoration: none;
@@ -174,29 +179,17 @@ html, body {
     color: #fff;
 }
 
-/* Ensure mobile menu actually shows when not hidden */
+/* Responsive Breakpoint */
+@media (max-width: 640px) {
+    .nav-links { 
+        display: none; 
+    }
+    .mobile-menu-toggle { 
+        display: block; 
+    }
+}
+
+/* Logic Helper Class */
 .mobile-nav-content:not([hidden]) {
     display: block;
-    background-color: #1f2937;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-
-/* Mobile Specifics */
-.mobile-menu-toggle {
-    display: none;
-}
-
-@media (max-width: 640px) {
-    .mobile-menu-toggle { display: block; }
-    .mobile-nav-content {
-        padding: 0.5rem 0.5rem 0.75rem;
-    }
-    .mobile-nav-content a {
-        display: block;
-        padding: 0.5rem 0.75rem;
-        color: #d1d5db;
-        text-decoration: none;
-        border-radius: 0.375rem;
-    }
 }

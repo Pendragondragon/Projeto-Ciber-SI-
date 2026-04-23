@@ -12,5 +12,5 @@ __pycache__/
 # Banco de dados local
 *.db
 
-# Dot env
+# Ficheiro de ambiente (contém passwords)
 .env
