@@ -12,6 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/login.js') }}" type="module" defer></script>
+    <script src="{{ url_for('static', filename='js/new_message.js') }}" defer></script>
 </head>
 
 <body class="h-full">
@@ -69,7 +70,7 @@
                             </div>
                         </div>
 
-                        <div class="col-span-full">
+                        <div id="passDiv" class="col-span-full">
                             <label for="pass" class="block text-sm/6 font-medium text-white">Password</label>
                             <div class="mt-2">
                                 <input id="pass" type="text" name="pass" autocomplete="pass"
@@ -120,7 +121,7 @@
                             </div>
                         </div>
 
-                        <div class="col-span-full">
+                        <div id="rsaDiv" class="col-span-full">
                             <label for="rsa_bits" class="block text-sm/6 font-medium text-white">RSA Size</label>
                             <div class="mt-2 grid grid-cols-1">
                                 <select id="rsa_bits" name="rsa_bits" autocomplete="rsa_bits-name"
