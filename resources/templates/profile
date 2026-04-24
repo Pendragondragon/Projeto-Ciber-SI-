@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - SAFE-DEPOSIT-BOX</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="navstyles.css" />
+    <link rel="stylesheet" href="profile.css" />
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="mobile-menu-toggle">
+                    <button type="button" id="menu-button">
+                        <i class="fa-solid fa-bars icon-open"></i>
+                    </button>
+                </div>
+
+                <div class="nav-main">
+                    <div class="logo">
+                        <img src="{{ url_for('static', filename='imagens/iconFundo.png') }}" alt="logo">
+                    </div>
+                    <ul class="nav-links">
+                        <li><a href="{{ url_for('index') }}" class="nav-item">Home</a></li>
+                        <li><a href="{{ url_for('deposit') }}" class="nav-item">Create Message</a></li>
+                        <li><a href="{{ url_for('open_vault') }}" class="nav-item">Open Vault</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-actions">
+                    <button type="button" class="notif-btn">
+                        <i class="fa-regular fa-bell"></i>
+                    </button>
+                    <div class="profile-dropdown">
+                        <button class="profile-btn" id="user-menu-button">
+                            <i class="fa-solid fa-circle-user"></i>
+                        </button>
+                        <div class="dropdown-menu" id="user-menu">
+                            <a href="#">Your profile</a>
+                            <a href="#">Settings</a>
+                            <a href="#">Sign out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-nav-content" id="mobile-menu" hidden>
+            <div class="mobile-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('deposit') }}">Message</a>
+                <a href="{{ url_for('open_vault') }}">Open Vault</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="settings-form">
+            <div class="header-flex">
+                <h2 class="section-title">Profile Settings</h2>
+                <button type="button" id="edit-toggle-btn" class="btn-secondary">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+                </button>
+            </div>
+
+            <form id="profile-form" action="#" method="POST" class="section-border">
+                
+                <div class="profile-image-container">
+                    <div id="image-wrapper" class="image-wrapper is-locked">
+                        <img id="profile-preview" src="pfp.jpg">
+                        <div class="image-overlay">
+                            <i class="fa-solid fa-camera"></i>
+                        </div>
+                    </div>
+                    <input type="file" id="file-upload" name="profile_pic" accept="image/*" onchange="previewImage(event)" hidden disabled>
+                    <p class="image-help">Click the circle to upload a new photo</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="fname">Name</label>
+                    <input type="text" id="fname" name="fname" class="input-field" value="Anakin" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="lname">Surname</label>
+                    <input type="text" id="lname" name="lname" class="input-field" value="Skywalker" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="story">Bio:</label>
+                    <textarea id="story" name="story" class="input-field" disabled>Jedi
+                "I'm a pilot, you know, and someday, I'm going to fly away from this place."</textarea>
+                </div>
+
+                <div class="form-actions" style="display: none;" id="save-actions">
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                    <button type="button" class="btn-secondary" onclick="window.location.reload()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="usericon.js"></script>
+    <script src="profile.js"></script>
+</body>
+</html>
