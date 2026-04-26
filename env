@@ -1,2 +1,3 @@
 MAIL_USERNAME=noreply.safedeposit@gmail.com
 MAIL_PASSWORD=cqzthxvicleqfrvj
+SECRET_KEY=check_out_this_super_secret

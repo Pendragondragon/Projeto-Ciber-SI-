@@ -4,8 +4,14 @@ from flask_bcrypt import Bcrypt
 from services.auth_service import gerar_token_recuperacao, validar_token
 from datetime import datetime
 from services.email_service import enviar_email_recuperacao
+import os
+from dotenv import load_dotenv
+import jwt
+import datetime
 
 bcrypt = Bcrypt(app)
+
+load_dotenv()
 
 @app.route("/login")
 def login():
@@ -128,6 +134,47 @@ def registerUser():
 
     return jsonify({"success": True, "message": "Utilizador registado com sucesso!"}), 201
 
+@app.route("/auth/login", methods=["POST"])
+def auth_login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+    
+    if not email or not password:
+        return jsonify({"success": False, "error": "Missing email or password"}), 400
+    
+    db = get_db()
+    cursor = db.cursor()
+
+    user = cursor.execute("SELECT * FROM user WHERE email = ?", (email,)).fetchone()
+
+    if not user:
+        return jsonify({"success": False, "error": "Invalid email or password"}), 401
+
+    stored_hash = user[3]
+
+    if not bcrypt.check_password_hash(stored_hash, password):
+        return jsonify({"success": False, "error": "Incorrect email or password"}), 401
+
+    
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
+    if not SECRET_KEY:
+        return jsonify({"success": False, "error": "Server configuration error"}), 500
+    
+    payload = {
+        "email": email,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+    }
+
+    token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
+
+    response = jsonify({"success": True, "message": "Login successful!"})
+
+    response.set_cookie('token', token, httponly=True)
+
+    return response, 200
+    
 @app.route("/", methods=["GET"])
 def check_jwt():
     jwt = request.cookies.get('token')
