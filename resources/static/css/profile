@@ -1,0 +1,184 @@
+/* Unified Global Background */
+html, body {
+    height: 100%;
+    margin: 0;
+    font-family: 'Inter', sans-serif, system-ui;
+    background-color: #111827; 
+    color: #d1d5db; 
+}
+
+.main-content {
+    padding: 3rem 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.settings-form {
+    width: 100%;
+    max-width: 600px;
+    background-color: #1f2937; /* Slightly lighter gray for the card */
+    padding: 2rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+.section-title {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.section-subtitle {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-bottom: 2rem;
+}
+
+/* Form Styling */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #e5e7eb;
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    text-align: left;
+    white-space: pre-line;
+}
+
+.input-field:focus {
+    outline: none;
+    border-color: #6366f1; /* Indigo-500 focus */
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: #6366f1;
+    color: #ffffff;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #4f46e5;
+}
+
+.btn-secondary {
+    background-color: #6366f1;
+    color: #d1d5db;
+    padding: 0.75rem 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-secondary:hover {
+    background-color: #4f46e5;
+}
+
+.profile-image-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.image-wrapper {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%; /* Makes it a circle */
+    overflow: hidden;
+    border: 3px solid #6366f1; /* Indigo accent from your nav */
+    cursor: pointer;
+    background-color: #111827;
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Prevents image stretching */
+}
+
+/* Hover effect to show a camera icon */
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.image-wrapper:hover .image-overlay {
+    opacity: 1;
+}
+
+.image-overlay i {
+    color: white;
+    font-size: 1.5rem;
+}
+
+.image-help {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-top: 0.75rem;
+}
+
+/* Header alignment */
+.header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+/* Visual cue for locked state */
+.input-field:disabled {
+    background-color: rgba(255, 255, 255, 0.02);
+    border-color: transparent;
+    color: #9ca3af;
+    cursor: not-allowed;
+    line-height: 1.5; /* Adds breathing room between the two lines */
+    resize: vertical; /* Allows the user to expand the box vertically if needed */
+}
+
+/* Disable image click visual when locked */
+.image-wrapper.is-locked {
+    cursor: default;
+    border-color: #374151; /* Grays out the indigo border */
+}
+
+.image-wrapper.is-locked .image-overlay {
+    display: none;
+}
