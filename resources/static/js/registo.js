@@ -30,15 +30,15 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
         body: JSON.stringify({ username, email, password })
     })
         .then(response => {
-            console.log("Status:", response.status);  
+            console.log("Status:", response.status);
             return response.json();
         })
         .then(data => {
-            console.log("Data:", data); 
+            console.log("Data:", data);
             if (data.success) {
                 mostrarNotificacao('Successful Sign In!', 'success');
                 setTimeout(() => {
-                    window.location.href = "/register"; 
+                    window.location.href = "/login";
                 }, 1500);
             } else {
                 const mensagem = data.message || data.error || 'Invalid Values.';
