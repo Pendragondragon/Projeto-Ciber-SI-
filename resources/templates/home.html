@@ -1,0 +1,48 @@
+<!doctype html>
+<html class="h-full bg-gray-900">
+  <head>
+    <title>SAFE-DEPOSIT-BOX</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  </head>
+
+  <body class="h-full">
+    <div
+      class="flex min-h-full flex-col justify-center items-center px-6 py-12 lg:px-8"
+    >
+      <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+        <img
+          src="{{ url_for('static', filename='imagens/iconFundo.png') }}"
+          alt="logo"
+          class="mx-auto h-32 w-auto"
+        />
+        <h1
+          class="mt-10 text-center text-4xl font-bold tracking-tight text-white"
+        >
+          SAFE-DEPOSIT-BOX
+        </h1>
+        <p class="mt-4 text-center text-gray-400">
+          Guarda as tuas mensagens de forma segura
+        </p>
+      </div>
+
+      <div class="mt-16 sm:mx-auto sm:w-full sm:max-w-sm space-y-4">
+        <a
+          href="{{ url_for('login') }}"
+          class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-3 text-sm/6 font-semibold text-white hover:bg-indigo-400 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+        >
+          Login
+        </a>
+
+        <a
+          href="{{ url_for('register') }}"
+          class="flex w-full justify-center rounded-md bg-gray-700 px-3 py-3 text-sm/6 font-semibold text-white hover:bg-gray-600 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-500"
+        >
+          Criar Conta
+        </a>
+      </div>
+    </div>
+  </body>
+</html>

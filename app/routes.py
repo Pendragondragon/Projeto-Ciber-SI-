@@ -2,16 +2,34 @@ from main import app, get_db
 from flask import render_template, request, jsonify
 from flask_bcrypt import Bcrypt
 from services.auth_service import gerar_token_recuperacao, validar_token
-from datetime import datetime
 from services.email_service import enviar_email_recuperacao
 import os
 from dotenv import load_dotenv
 import jwt
 import datetime
+from functools import wraps
 
 bcrypt = Bcrypt(app)
 
 load_dotenv()
+
+# Decorador para proteger rotas que requerem autenticação
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.cookies.get('token')
+        SECRET_KEY = os.getenv("SECRET_KEY")
+        
+        if not token or not SECRET_KEY:
+            return render_template("login.html")
+        
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except jwt.InvalidTokenError:
+            return render_template("login.html")
+        
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route("/login")
 def login():
@@ -73,7 +91,7 @@ def reset_password_route():
     user_obj = User(user[0], user[1], user[2], user[3])
     user_obj.reset_token = user[4]
     # Converter string da BD para objeto datetime
-    user_obj.reset_token_expira = datetime.fromisoformat(user[5])
+    user_obj.reset_token_expira = datetime.datetime.fromisoformat(user[5])
 
     if not validar_token(user_obj, token):
         return jsonify({"success": False, "error": "Token expirado"}), 400
@@ -95,14 +113,17 @@ def register():
     return render_template("signup.html")
 
 @app.route("/index")
+@login_required
 def index():
     return render_template("base.html")
 
 @app.route("/deposit")
+@login_required
 def deposit():
     return render_template("new_message.html")
 
 @app.route("/open_vault")
+@login_required
 def open_vault():
     return render_template("open_vault.html")
 
@@ -177,8 +198,29 @@ def auth_login():
     
 @app.route("/", methods=["GET"])
 def check_jwt():
-    jwt = request.cookies.get('token')
+    token = request.cookies.get('token')
+    SECRET_KEY = os.getenv("SECRET_KEY")
     
-    if not jwt:
-        return render_template("login.html")
-    return render_template("inicio.html")
+    if not token or not SECRET_KEY:
+        return render_template("home.html")
+
+    try:
+        jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return render_template("base.html")
+    except jwt.InvalidTokenError:
+        return render_template("home.html")
+
+
+@app.route("/auth/check", methods=["GET"])
+def auth_check():
+    token = request.cookies.get('token')
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
+    if not token or not SECRET_KEY:
+        return jsonify({"isLoggedIn": False})
+
+    try:
+        jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return jsonify({"isLoggedIn": True})
+    except jwt.InvalidTokenError:
+        return jsonify({"isLoggedIn": False})
