@@ -127,6 +127,11 @@ def deposit():
 def open_vault():
     return render_template("open_vault.html")
 
+@app.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html")
+
 @app.route("/auth/registerUser", methods=["POST"])
 def registerUser():
     data = request.get_json()

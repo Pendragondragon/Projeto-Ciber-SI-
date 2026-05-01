@@ -45,7 +45,7 @@
                             <i class="fa-solid fa-circle-user"></i>
                         </button>
                         <div class="dropdown-menu" id="user-menu">
-                            <a href="#">Your profile</a>
+                            <a href="{{ url_for('profile') }}">Your profile</a>
                             <a href="#">Settings</a>
                             <a href="#">Sign out</a>
                         </div>
@@ -66,7 +66,7 @@
                     <i class="fa-solid fa-user-gear"></i> Profile Settings
                 </button>
                 <div class="panel" id="mobile-user-panel">
-                    <a href="#">Your profile</a>
+                    <a href="{{ url_for('profile') }}">Your profile</a>
                     <a href="#">Settings</a>
                     <a href="#">Sign out</a>
                 </div>
