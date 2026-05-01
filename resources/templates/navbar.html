@@ -47,7 +47,7 @@
                         <div class="dropdown-menu" id="user-menu">
                             <a href="{{ url_for('profile') }}">Your profile</a>
                             <a href="#">Settings</a>
-                            <a href="#">Sign out</a>
+                            <a href="{{ url_for('signout') }}">Sign out</a>
                         </div>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
                 <div class="panel" id="mobile-user-panel">
                     <a href="{{ url_for('profile') }}">Your profile</a>
                     <a href="#">Settings</a>
-                    <a href="#">Sign out</a>
+                    <a href="{{ url_for('signout') }}">Sign out</a>
                 </div>
             </div>
         </div>

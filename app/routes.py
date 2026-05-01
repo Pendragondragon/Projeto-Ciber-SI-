@@ -1,5 +1,5 @@
 from main import app, get_db
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect, url_for
 from flask_bcrypt import Bcrypt
 from services.auth_service import gerar_token_recuperacao, validar_token
 from services.email_service import enviar_email_recuperacao
@@ -131,6 +131,15 @@ def open_vault():
 @login_required
 def profile():
     return render_template("profile.html")
+
+@app.route("/auth/signout")
+@login_required
+def signout():
+    response = redirect(url_for('login'))
+
+    response.delete_cookie('token')
+
+    return response
 
 @app.route("/auth/registerUser", methods=["POST"])
 def registerUser():
