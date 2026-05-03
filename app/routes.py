@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import jwt
 import datetime
 from functools import wraps
+import hashlib
 
 bcrypt = Bcrypt(app)
 
@@ -238,3 +239,79 @@ def auth_check():
         return jsonify({"isLoggedIn": True})
     except jwt.InvalidTokenError:
         return jsonify({"isLoggedIn": False})
+
+@app.after_request
+def add_header(response):
+    # impede o browser de voltar a uma pagina quando o acesso expirar
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+#criar cofre com mensagem
+@app.route("/message/deposit", methods=["POST"])
+def create_newMessage():
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "Dados não recebidos"}), 400
+
+    title = data.get('title')
+    message = data.get('message')
+    method = data.get('method')
+    password = data.get('password')
+    hmac_hash = data.get('hmac_hash')
+    sig_hash = data.get('sig_hash')
+    rsa_bits = data.get('rsa_bits')
+
+    if not message:
+        return jsonify({"success": False, "error": "A mensagem nao pode estar vazia"}), 400
+    
+    #assinar o texto limpo
+    assDgtl = assinar_digitalmente(sig_hash, message)
+
+    #verificar o método
+    if method == "random-key" :
+        cryptogram = ""
+    elif method == "password" :
+        cryptogram = ""
+    elif method == "rsa":
+        cryptogram = ""
+
+    #hmac o criptograma
+    hmac_auth = HMAC_authentication(hmac_hash, cryptogram)
+
+    #salvar na base de dados, a assinatura, o criptograma, a hmac, e tudo o que for necessario
+
+
+def HMAC_authentication(hmac_hash, cryptogram):
+    #buscar a chave de integridade
+    INTEGRITY_KEY = os.getenv("HMAC_INTEGRITY_KEY")
+
+    #buscar o tamanho do bloco do algoritmo
+    if hmac_hash == "hmac_sha256":
+        block_size = 64
+        hash_func = hashlib.sha256
+    else:
+        block_size = 128
+        hash_func = hashlib.sha512
+
+    #verificar se a chave tem o tamanho necessario
+    if len(INTEGRITY_KEY) > block_size:
+        key = hash_func(INTEGRITY_KEY).digest()
+    elif len(INTEGRITY_KEY) < block_size:
+        #encher com zeros ate ao tamanho desejado
+        key = key.ljust(block_size, b'\x00')
+
+    #criar os pads
+    ipad = bytes((x ^ 0x36) for x in key)
+    opad = bytes((x ^ 0x5c) for x in key)
+
+    #pad interior
+    inner_pad = hash_func(ipad + cryptogram).digest()
+    #resultado
+    result = hash_func(opad + inner_pad).hexdigest()
+
+    return result
+
+def assinar_digitalmente(sig_hash, message):
+    print()
