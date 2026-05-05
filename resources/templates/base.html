@@ -1,22 +1,22 @@
-{% extends "navbar.html" %}
-
-{% block content %}
+{% extends "navbar.html" %} {% block content %}
 
 <!doctype html>
 <html class="h-full bg-gray-900">
-
-<head>
+  <head>
     <title>SAFE-DEPOSIT-BOX</title>
-    <link href="{{ url_for('static', filename='css/input.css') }}" rel="stylesheet">
+    <link
+      href="{{ url_for('static', filename='css/input.css') }}"
+      rel="stylesheet"
+    />
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="{{ url_for('static', filename='js/toast.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/login.js') }}" type="module" defer></script>
-</head>
+    <script
+      src="{{ url_for('static', filename='js/toast.js') }}"
+      defer
+    ></script>
+  </head>
 
-<body class="h-full">
-</body>
-
+  <body class="h-full"></body>
 </html>
 
 {% endblock %}

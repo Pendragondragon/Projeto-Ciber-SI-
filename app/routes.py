@@ -1,17 +1,36 @@
 from main import app, get_db
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect, url_for
 from flask_bcrypt import Bcrypt
 from services.auth_service import gerar_token_recuperacao, validar_token
-from datetime import datetime
 from services.email_service import enviar_email_recuperacao
 import os
 from dotenv import load_dotenv
 import jwt
 import datetime
+from functools import wraps
+import hashlib
 
 bcrypt = Bcrypt(app)
 
 load_dotenv()
+
+# Decorador para proteger rotas que requerem autenticação
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = request.cookies.get('token')
+        SECRET_KEY = os.getenv("SECRET_KEY")
+        
+        if not token or not SECRET_KEY:
+            return render_template("login.html")
+        
+        try:
+            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        except jwt.InvalidTokenError:
+            return render_template("login.html")
+        
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route("/login")
 def login():
@@ -73,7 +92,7 @@ def reset_password_route():
     user_obj = User(user[0], user[1], user[2], user[3])
     user_obj.reset_token = user[4]
     # Converter string da BD para objeto datetime
-    user_obj.reset_token_expira = datetime.fromisoformat(user[5])
+    user_obj.reset_token_expira = datetime.datetime.fromisoformat(user[5])
 
     if not validar_token(user_obj, token):
         return jsonify({"success": False, "error": "Token expirado"}), 400
@@ -95,16 +114,33 @@ def register():
     return render_template("signup.html")
 
 @app.route("/index")
+@login_required
 def index():
     return render_template("base.html")
 
 @app.route("/deposit")
+@login_required
 def deposit():
     return render_template("new_message.html")
 
 @app.route("/open_vault")
+@login_required
 def open_vault():
     return render_template("open_vault.html")
+
+@app.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html")
+
+@app.route("/auth/signout")
+@login_required
+def signout():
+    response = redirect(url_for('login'))
+
+    response.delete_cookie('token')
+
+    return response
 
 @app.route("/auth/registerUser", methods=["POST"])
 def registerUser():
@@ -177,8 +213,105 @@ def auth_login():
     
 @app.route("/", methods=["GET"])
 def check_jwt():
-    jwt = request.cookies.get('token')
+    token = request.cookies.get('token')
+    SECRET_KEY = os.getenv("SECRET_KEY")
     
-    if not jwt:
-        return render_template("login.html")
-    return render_template("inicio.html")
+    if not token or not SECRET_KEY:
+        return render_template("home.html")
+
+    try:
+        jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return render_template("base.html")
+    except jwt.InvalidTokenError:
+        return render_template("home.html")
+
+
+@app.route("/auth/check", methods=["GET"])
+def auth_check():
+    token = request.cookies.get('token')
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
+    if not token or not SECRET_KEY:
+        return jsonify({"isLoggedIn": False})
+
+    try:
+        jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return jsonify({"isLoggedIn": True})
+    except jwt.InvalidTokenError:
+        return jsonify({"isLoggedIn": False})
+
+@app.after_request
+def add_header(response):
+    # impede o browser de voltar a uma pagina quando o acesso expirar
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
+
+#criar cofre com mensagem
+@app.route("/message/deposit", methods=["POST"])
+def create_newMessage():
+    data = request.get_json()
+    if not data:
+        return jsonify({"success": False, "error": "Dados não recebidos"}), 400
+
+    title = data.get('title')
+    message = data.get('message')
+    method = data.get('method')
+    password = data.get('password')
+    hmac_hash = data.get('hmac_hash')
+    sig_hash = data.get('sig_hash')
+    rsa_bits = data.get('rsa_bits')
+
+    if not message:
+        return jsonify({"success": False, "error": "A mensagem nao pode estar vazia"}), 400
+    
+    #assinar o texto limpo
+    assDgtl = assinar_digitalmente(sig_hash, message)
+
+    #verificar o método
+    if method == "random-key" :
+        cryptogram = ""
+    elif method == "password" :
+        cryptogram = ""
+    elif method == "rsa":
+        cryptogram = ""
+
+    #hmac o criptograma
+    hmac_auth = HMAC_authentication(hmac_hash, cryptogram)
+
+    #salvar na base de dados, a assinatura, o criptograma, a hmac, e tudo o que for necessario
+
+
+def HMAC_authentication(hmac_hash, cryptogram):
+    #buscar a chave de integridade
+    INTEGRITY_KEY = os.getenv("HMAC_INTEGRITY_KEY")
+
+    #buscar o tamanho do bloco do algoritmo
+    if hmac_hash == "hmac_sha256":
+        block_size = 64
+        hash_func = hashlib.sha256
+    else:
+        block_size = 128
+        hash_func = hashlib.sha512
+
+    #verificar se a chave tem o tamanho necessario
+    if len(INTEGRITY_KEY) > block_size:
+        key = hash_func(INTEGRITY_KEY).digest()
+    elif len(INTEGRITY_KEY) < block_size:
+        #encher com zeros ate ao tamanho desejado
+        key = key.ljust(block_size, b'\x00')
+
+    #criar os pads
+    ipad = bytes((x ^ 0x36) for x in key)
+    opad = bytes((x ^ 0x5c) for x in key)
+
+    #pad interior
+    inner_pad = hash_func(ipad + cryptogram).digest()
+    #resultado
+    result = hash_func(opad + inner_pad).hexdigest()
+
+    return result
+
+def assinar_digitalmente(sig_hash, message):
+    print()

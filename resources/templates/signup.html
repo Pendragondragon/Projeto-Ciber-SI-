@@ -1,11 +1,9 @@
-{% extends "navbar.html" %}
-
-{% block content %}
-
 <!doctype html>
 <html class="h-full bg-gray-900">
   <head>
     <title>Sign Up</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
       href="{{ url_for('static', filename='css/input.css') }}"
       rel="stylesheet"
@@ -17,7 +15,6 @@
     ></script>
     <script
       src="{{ url_for('static', filename='js/registo.js') }}"
-      type="module"
       defer
     ></script>
   </head>
@@ -25,10 +22,10 @@
   <body class="h-full">
     <div class="flex min-h-full flex-col justify-center px-6 py-12 lg:px-8">
       <div class="sm:mx-auto sm:w-full sm:max-w-sm">
-       
         <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
         <h2
-          class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">
+          class="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white"
+        >
           Create your account
         </h2>
       </div>
@@ -38,7 +35,9 @@
           <div>
             <label
               for="username"
-              class="block text-sm/6 font-medium text-gray-100">Username</label>
+              class="block text-sm/6 font-medium text-gray-100"
+              >Username</label
+            >
             <div class="mt-2">
               <input
                 id="username"
@@ -47,11 +46,13 @@
                 required
                 class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 required
-                />
+              />
             </div>
           </div>
           <div>
-            <label for="email" class="block text-sm/6 font-medium text-gray-100">Email Address</label>
+            <label for="email" class="block text-sm/6 font-medium text-gray-100"
+              >Email Address</label
+            >
             <div class="mt-2">
               <input
                 id="email"
@@ -61,13 +62,15 @@
                 autocomplete="email"
                 class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 required
-                />
+              />
             </div>
           </div>
           <div>
             <label
               for="password"
-              class="block text-sm/6 font-medium text-gray-100">Password</label>
+              class="block text-sm/6 font-medium text-gray-100"
+              >Password</label
+            >
             <div class="mt-2">
               <input
                 id="password"
@@ -77,13 +80,15 @@
                 autocomplete="new-password"
                 class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 required
-                />
+              />
             </div>
           </div>
           <div>
             <label
               for="confirmpassword"
-              class="block text-sm/6 font-medium text-gray-100">Confirm Password</label>
+              class="block text-sm/6 font-medium text-gray-100"
+              >Confirm Password</label
+            >
             <div class="mt-2">
               <input
                 id="confirmpassword"
@@ -93,13 +98,14 @@
                 autocomplete="new-password"
                 class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
                 required
-                />
+              />
             </div>
           </div>
           <div>
             <button
               type="submit"
-              class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+              class="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            >
               Sign up
             </button>
           </div>
@@ -107,11 +113,13 @@
 
         <p class="mt-10 text-center text-sm/6 text-gray-400">
           Already a member?
-          <a href="{{ url_for('login')}}" class="font-semibold text-indigo-400 hover:text-indigo-300">Sign In</a>
+          <a
+            href="{{ url_for('login')}}"
+            class="font-semibold text-indigo-400 hover:text-indigo-300"
+            >Sign In</a
+          >
         </p>
       </div>
     </div>
   </body>
 </html>
-
-{% endblock %}
