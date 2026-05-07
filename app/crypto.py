@@ -2,6 +2,7 @@ import hashlib
 import os
 from dotenv import load_dotenv
 
+load_dotenv()
 
 def HMAC_authentication(hmac_hash, cryptogram):
     #buscar a chave de integridade
