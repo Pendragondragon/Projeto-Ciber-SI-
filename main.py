@@ -3,6 +3,7 @@ from flask_mail import Mail
 import os
 from dotenv import load_dotenv
 import sqlite3
+from app.routes import *
 
 load_dotenv()
 
@@ -30,7 +31,6 @@ app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 
 mail = Mail(app)
 
-from app.routes import *
 
 if __name__ == "__main__":
     app.run()
