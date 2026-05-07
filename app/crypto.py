@@ -2,10 +2,13 @@ import hashlib
 import os
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.exceptions import InvalidKey
+
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.primitives import padding as sym_padding
 
 load_dotenv()
 
@@ -55,9 +58,9 @@ def sign_digitally(sig_hash, message):
 
     signature = sk.sign(
         message,
-        padding.PSS(
-            mgf=padding.MGF1(hash_func),
-            salt_length=padding.PSS.MAX_LENGTH
+        asym_padding.PSS(
+            mgf=asym_padding.MGF1(hash_func),
+            salt_length=asym_padding.PSS.MAX_LENGTH
         ),
         hash_func
     )
@@ -121,3 +124,97 @@ def verifyDerivedKey(salt, storedKey, insertedKey):
         return True
     except InvalidKey:
         return False
+    
+
+
+# Chave Simétrica (POR TESTETAR - NÃO USAR AINDA)
+
+## AES256_CBC
+
+def random_bytes(n: int) -> bytes:
+    return os.urandom(n)
+    
+def aes256_cbc_encrypt(message, key, iv):
+    if key == None:
+        key = random_bytes(32)
+    else:
+        if len(key) != 32:
+            key = hashlib.sha256(key.encode()).digest()
+    if iv is None:
+        iv = os.urandom(16)
+    if len(iv) != 16:
+        raise ValueError("CBC IV must be 16 bytes")
+
+    padder = sym_padding.PKCS7(128).padder()
+    padded_message = padder.update(message.encode('utf-8'))
+    padded_message += padder.finalize()
+
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv))
+    encryptor = cipher.encryptor()
+    ciphertext = encryptor.update(padded_message) + encryptor.finalize()
+    
+    return ciphertext, iv, key
+
+def decrypt_AES_CBC(ciphertext, key, iv):
+    decryptor = Cipher(algorithms.AES(key), modes.CBC(iv)).decryptor()
+    decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
+
+    unpadder = padding.PKCS7(128).unpadder()
+    unpadded_data = unpadder.update(decrypted_data)
+    unpadded_data += unpadder.finalize()
+    return unpadded_data.decode('utf-8')
+
+
+## AES256_CTR
+def aes256_ctr_encrypt(message, key, iv):
+    if key == None:
+        key = random_bytes(32)
+    else:
+        if len(key) != 32:
+            key = hashlib.sha256(key.encode()).digest()
+    if iv is None:
+        iv = os.urandom(16)
+    if len(iv) != 16:
+        raise ValueError("CTR IV must be 16 bytes")
+
+    padder = padding.PKCS7(128).padder()
+    padded_message = padder.update(message.encode('utf-8'))
+    padded_message += padder.finalize()
+
+    cipher = Cipher(algorithms.AES(key), modes.CTR(iv))
+    encryptor = cipher.encryptor()
+    ciphertext = encryptor.update(padded_message) + encryptor.finalize()
+    
+    return ciphertext, iv, key
+
+def decrypt_AES_CTR(ciphertext, key, iv):
+    decryptor = Cipher(algorithms.AES(key), modes.CTR(iv)).decryptor()
+    decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
+
+    unpadder = padding.PKCS7(128).unpadder()
+    unpadded_data = unpadder.update(decrypted_data)
+    unpadded_data += unpadder.finalize()
+    return unpadded_data.decode('utf-8')
+
+
+# ChaCha20
+
+def encrypt_chacha20(message, key, iv):
+    if iv is None:
+        iv = os.urandom(16)
+    if len(iv) != 16:
+        raise ValueError("CBC IV must be 16 bytes")
+    algorithm = algorithms.ChaCha20(key, iv)
+    cipher = Cipher(algorithm, mode=None) # Stream ciphers não precisam de 'mode' externo
+    encryptor = cipher.encryptor()
+    
+    ciphertext = encryptor.update(message.encode('utf-8'))
+    return ciphertext, iv
+
+def decrypt_chacha20(ciphertext, key, iv):
+    algorithm = algorithms.ChaCha20(key, iv)
+    cipher = Cipher(algorithm, mode=None)
+    decryptor = cipher.decryptor()
+    
+    plaintext = decryptor.update(ciphertext)
+    return plaintext.decode('utf-8')
