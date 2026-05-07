@@ -9,7 +9,8 @@ import jwt
 import datetime
 from functools import wraps
 import hashlib
-from crypto import *
+from app.crypto import *
+import base64
 
 bcrypt = Bcrypt(app)
 
@@ -249,8 +250,9 @@ def add_header(response):
     response.headers["Expires"] = "0"
     return response
 
-#criar cofre com mensagem
+#criar cofre com mensagem        
 @app.route("/message/deposit", methods=["POST"])
+@login_required
 def create_newMessage():
     data = request.get_json()
     if not data:
@@ -266,19 +268,54 @@ def create_newMessage():
 
     if not message:
         return jsonify({"success": False, "error": "A mensagem nao pode estar vazia"}), 400
-    
-    #assinar o texto limpo
-    assDgtl = assinar_digitalmente(sig_hash, message)
 
-    #verificar o método
-    if method == "random-key" :
-        cryptogram = ""
-    elif method == "password" :
-        cryptogram = ""
-    elif method == "rsa":
-        cryptogram = ""
+    # buscar o utilizador pelo token
+    token = request.cookies.get('token')
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    if not token or not SECRET_KEY:
+        return jsonify({"success": False, "error": "Autenticação necessária"}), 401
 
-    #hmac o criptograma
-    hmac_auth = HMAC_authentication(hmac_hash, cryptogram)
+    try:
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return jsonify({"success": False, "error": "Token inválido"}), 401
 
-    #salvar na base de dados, a assinatura, o criptograma, a hmac, e tudo o que for necessario
+    email = decoded.get("email")
+
+    db = get_db()
+    cursor = db.cursor()
+
+    user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
+    if not user:
+        return jsonify({"success": False, "error": "Utilizador não encontrado"}), 404
+
+    utilizador_id = user[0]
+
+    # assinar o texto limpo (ainda sem cifrar, mandamos a mensagem original)
+    assDgtl = sign_digitally(sig_hash, message)
+    # converter assinatura para base64 para armazenar como texto
+    assinatura_b64 = base64.b64encode(assDgtl).decode()
+
+    # por agora sem cifrar
+    cryptogram = message
+
+    # hmac do criptograma (HMAC_authentication espera bytes)
+    hmac_auth = HMAC_authentication(hmac_hash, cryptogram.encode())
+
+    # inserir mensagem
+    cursor.execute(
+        "INSERT INTO mensagem (titulo, conteudoCifrado) VALUES (?, ?)",
+        (title, cryptogram)
+    )
+    db.commit()
+
+    mensagem_id = cursor.lastrowid
+
+    # inserir cofre (usar colunas existentes em app/database.py)
+    cursor.execute(
+        "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?)",
+        (hmac_auth, assinatura_b64, method, utilizador_id, mensagem_id)
+    )
+    db.commit()
+
+    return jsonify({"success": True, "message": "Mensagem guardada com sucesso!", "mensagem_id": mensagem_id}), 201
