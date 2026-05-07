@@ -1,50 +1,70 @@
 {% extends "navbar.html" %}
 
 {% block content %}
-  <h1>Resultado da abertura do cofre</h1>
-
-  <div class="card">
-    <p><strong>ID do cofre:</strong> {{ vault_id }}</p>
-    <p><strong>Cifra usada:</strong> {{ cipher_choice }}</p>
-
-    <p>
-      Verificação do HMAC:
-      {% if hmac_ok %}
-        <span class="ok">OK</span>
-      {% else %}
-        <span class="bad">FALHOU</span>
-      {% endif %}
-    </p>
-
-    <p>
-      Decifra:
-      {% if decrypt_ok %}
-        <span class="ok">OK</span>
-      {% else %}
-        <span class="bad">FALHOU</span>
-      {% endif %}
-    </p>
-
-    <p>
-      Verificação da assinatura digital do texto-limpo:
-      {% if sig_ok %}
-        <span class="ok">OK</span>
-      {% else %}
-        <span class="bad">FALHOU</span>
-      {% endif %}
-    </p>
-  </div>
-
-  {% if error %}
-    <div class="card">
-      <p class="bad">{{ error }}</p>
+<div class="vault-wrapper">
+    <!-- The same background glow from your pricing page -->
+    <div aria-hidden="true" class="bg-glow">
+        <div class="glow-shape"></div>
     </div>
-  {% endif %}
 
-  {% if message %}
-    <div class="card">
-      <p><strong>Mensagem decifrada:</strong></p>
-      <pre>{{ message }}</pre>
+    <div class="vault-container">
+        <header class="vault-header">
+            <h2 class="pre-title">Security Report</h2>
+            <h1 class="main-title">Vault Opening Result</h1>
+        </header>
+
+        <section class="vault-card">
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Vault ID</label>
+                    <span class="value mono">#{{ vault_id }}</span>
+                </div>
+                <div class="info-item">
+                    <label>Cipher Engine</label>
+                    <span class="value text-white">{{ cipher_choice }}</span>
+                </div>
+            </div>
+
+            <div class="status-list">
+                <div class="status-row">
+                    <span>HMAC Verification</span>
+                    <span class="badge {{ 'ok' if hmac_ok else 'bad' }}">
+                        {{ 'OK' if hmac_ok else 'FAILED' }}
+                    </span>
+                </div>
+                <div class="status-row">
+                    <span>Decryption Stream</span>
+                    <span class="badge {{ 'ok' if decrypt_ok else 'bad' }}">
+                        {{ 'OK' if decrypt_ok else 'FAILED' }}
+                    </span>
+                </div>
+                <div class="status-row">
+                    <span>Digital Signature</span>
+                    <span class="badge {{ 'ok' if sig_ok else 'bad' }}">
+                        {{ 'VERIFIED' if sig_ok else 'INVALID' }}
+                    </span>
+                </div>
+            </div>
+
+            {% if error %}
+            <div class="error-box">
+                <p>{{ error }}</p>
+            </div>
+            {% endif %}
+
+            {% if message %}
+            <div class="message-container">
+                <label class="terminal-label">Decrypted Message</label>
+                <div class="terminal-window">
+                    <pre>{{ message }}</pre>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="actions">
+                <a href="/" class="btn-primary">Return to Console</a>
+            </div>
+        </section>
     </div>
-  {% endif %}
-{% endblock %}
+</div>
+<link rel="stylesheet" href="OpenVault.css" />
