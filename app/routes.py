@@ -313,8 +313,8 @@ def create_newMessage():
 
     # inserir cofre (usar colunas existentes em app/database.py)
     cursor.execute(
-        "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?)",
-        (hmac_auth, assinatura_b64, method, utilizador_id, mensagem_id)
+        "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id)
     )
     db.commit()
 
