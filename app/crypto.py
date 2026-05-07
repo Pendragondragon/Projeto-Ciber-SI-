@@ -83,9 +83,9 @@ def verify_signature(signature, message, sig_hash):
         pk.verify(
             signature,
             message,
-            padding.PSS(
-                mgf=padding.MGF1(hash_func),
-                salt_length=padding.PSS.MAX_LENGTH
+            sym_padding.PSS(
+                mgf=sym_padding.MGF1(hash_func),
+                salt_length=sym_padding.PSS.MAX_LENGTH
             ),
             hash_func
         )
@@ -159,7 +159,7 @@ def decrypt_AES_CBC(ciphertext, key, iv):
     decryptor = Cipher(algorithms.AES(key), modes.CBC(iv)).decryptor()
     decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
 
-    unpadder = padding.PKCS7(128).unpadder()
+    unpadder = sym_padding.PKCS7(128).unpadder()
     unpadded_data = unpadder.update(decrypted_data)
     unpadded_data += unpadder.finalize()
     return unpadded_data.decode('utf-8')
@@ -177,7 +177,7 @@ def aes256_ctr_encrypt(message, key, iv):
     if len(iv) != 16:
         raise ValueError("CTR IV must be 16 bytes")
 
-    padder = padding.PKCS7(128).padder()
+    padder = sym_padding.PKCS7(128).padder()
     padded_message = padder.update(message.encode('utf-8'))
     padded_message += padder.finalize()
 
@@ -191,7 +191,7 @@ def decrypt_AES_CTR(ciphertext, key, iv):
     decryptor = Cipher(algorithms.AES(key), modes.CTR(iv)).decryptor()
     decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
 
-    unpadder = padding.PKCS7(128).unpadder()
+    unpadder = sym_padding.PKCS7(128).unpadder()
     unpadded_data = unpadder.update(decrypted_data)
     unpadded_data += unpadder.finalize()
     return unpadded_data.decode('utf-8')
