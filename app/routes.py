@@ -261,10 +261,16 @@ def create_newMessage():
     title = data.get('title')
     message = data.get('message')
     method = data.get('method')
-    password = data.get('password')
-    hmac_hash = data.get('hmac_hash')
+    
+    alg_simetrico = data.get('algSim_bits')           
+    key_source = data.get('symmetric_key_source')     
+    password = data.get('password')                  
+
+    rsa_bits = data.get('rsa_bits')                  
+    rsa_key_type = data.get('rsa_key_type')           
+
+    hmac_hash = data.get('hmac_hash')   
     sig_hash = data.get('sig_hash')
-    rsa_bits = data.get('rsa_bits')
 
     if not message:
         return jsonify({"success": False, "error": "A mensagem nao pode estar vazia"}), 400

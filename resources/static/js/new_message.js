@@ -77,10 +77,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             title: formData.get('title'),
             message: formData.get('message'),
             method: formData.get('method'),
+
+            algSim_bits: formData.get('algSim_bits'), 
+            symmetric_key_source: formData.get('symmetric_key_source'), 
             password: formData.get('pass'),
+
+            rsa_bits: formData.get('rsa_bits'),
+            rsa_key_type: formData.get('rsa_key_type'), 
+
             hmac_hash: formData.get('sig_hash'),
-            sig_hash: formData.get('hash_signature'),
-            rsa_bits: formData.get('rsa_bits')
+            sig_hash: formData.get('hash_signature')
         };
 
         fetch(url + '/deposit', {
