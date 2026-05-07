@@ -4,6 +4,8 @@ from dotenv import load_dotenv
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.exceptions import InvalidKey
 
 load_dotenv()
 
@@ -86,4 +88,36 @@ def verify_signature(signature, message, sig_hash):
         )
         return True
     except Exception:
+        return False
+    
+#pega na password e deriva de forma a ficar aleatorio e com tamanho maior
+#devolve a chave no formato certo e o salt usado no processo
+def deriveKey(key):
+    salt = os.urandom(16)
+    keyBytes = key.encode()
+    
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=1_200_000,
+    )
+
+    key = kdf.derive(keyBytes)
+    return salt, key
+
+def verifyDerivedKey(salt, storedKey, insertedKey):
+    password = insertedKey.encode()
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=1_200_000,
+    )
+
+    try:
+        kdf.verify(password, storedKey)        
+        return True
+    except InvalidKey:
         return False
