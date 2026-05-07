@@ -11,7 +11,7 @@ __pycache__/
 *.pyc
 
 # Banco de dados local
-#*.db
+*.db
 
 # Ficheiro de ambiente (contém passwords)
 .env
