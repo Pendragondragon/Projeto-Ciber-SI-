@@ -28,7 +28,7 @@ cursor.execute("""
         codigoDeAutenticacao TEXT,
         assinaturaDigital TEXT,
         tipoDeCifra TEXT,
-        hamcHash TEXT,
+        hmacHash TEXT,
         sigHash TEXT,
         utilizador_id INTEGER,
         mensagem_id INTEGER,
