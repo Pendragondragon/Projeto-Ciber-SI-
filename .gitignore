@@ -15,3 +15,6 @@ __pycache__/
 
 # Ficheiro de ambiente (contém passwords)
 .env
+
+#chaves de assinar
+*.pem
