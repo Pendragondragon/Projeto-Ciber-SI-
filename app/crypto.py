@@ -2,11 +2,11 @@ import hashlib
 import os
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
 from cryptography.hazmat.primitives import serialization
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives import padding as sym_padding
 
 load_dotenv()
 
@@ -56,9 +56,9 @@ def sign_digitally(sig_hash, message):
 
     signature = sk.sign(
         message,
-        padding.PSS(
-            mgf=padding.MGF1(hash_func),
-            salt_length=padding.PSS.MAX_LENGTH
+        asym_padding.PSS(
+            mgf=asym_padding.MGF1(hash_func),
+            salt_length=asym_padding.PSS.MAX_LENGTH
         ),
         hash_func
     )
@@ -111,7 +111,7 @@ def aes256_cbc_encrypt(message, key, iv):
     if len(iv) != 16:
         raise ValueError("CBC IV must be 16 bytes")
 
-    padder = padding.PKCS7(128).padder()
+    padder = sym_padding.PKCS7(128).padder()
     padded_message = padder.update(message.encode('utf-8'))
     padded_message += padder.finalize()
 
