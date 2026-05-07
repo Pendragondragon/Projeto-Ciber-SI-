@@ -3,9 +3,20 @@ const url = "/message";
 document.addEventListener("DOMContentLoaded", async () => {
     const methodSelect = document.getElementById('method');
     const rsa_bits = document.getElementById('rsaDiv');
+    const rsaSelect = document.getElementById('rsa_bits');
+
     const pass = document.getElementById('passDiv');
     const passInput = document.getElementById('pass');
-    const rsaSelect = document.getElementById('rsa_bits');
+
+    const whichkeyDiv = document.getElementById('whichKeyDiv');
+    const whichAlgSim = document.getElementById('algSimDiv');
+    const yesKey = document.getElementById('yes_nova');
+    const noKey = document.getElementById('no_nova');
+    const algSim_bits = document.getElementById('algSim_bits');
+
+    const chosenRandDiv = document.getElementById('chosenRandDiv');
+    const passRand = document.getElementById('passRand');
+    const passChosen = document.getElementById('passChosen');
 
     const BtnCreateVault = document.getElementById('createVault');
 
@@ -15,20 +26,38 @@ document.addEventListener("DOMContentLoaded", async () => {
         const selectedValue = methodSelect.value;
 
         //esconde todos os que sao opcionais
-        rsa_bits.style.display = "none";
-        pass.style.display = "none";
+        [rsaDiv, whichKeyDiv, chosenRandDiv, algSimDiv, pass].forEach(div => {
+            if (div) div.style.display = "none";
+        });
 
-        //remove a obrigatoriedade
-        passInput.removeAttribute('required');
-        rsaSelect.removeAttribute('required');
+        // Remove a obrigatoriedade
+        const allInputs = [rsaSelect, yesKey, noKey, algSim_bits, passRand, passChosen, passInput];
+        allInputs.forEach(input => {
+            if (input) input.removeAttribute('required');
+        });
+
 
         //mostra so os que interessam
         if (selectedValue === "rsa") {
-            rsa_bits.style.display = "block";
-            rsaSelect.setAttribute('required', '');
-        } else if (selectedValue === "password") {
-            pass.style.display = "block";
-            passInput.setAttribute('required', '');
+            if (rsaDiv) rsaDiv.style.display = "block";
+            if (rsaSelect) rsaSelect.setAttribute('required', '');
+
+            if (whichKeyDiv) whichKeyDiv.style.display = "block";
+            if (yesKey) yesKey.setAttribute('required', '');
+            if (noKey) noKey.setAttribute('required', '');
+
+        } else if (selectedValue === "random-key") {
+            if (algSimDiv) algSimDiv.style.display = "block";
+            if (algSim_bits) algSim_bits.setAttribute('required', '');
+
+            if (chosenRandDiv) chosenRandDiv.style.display = "block";
+            if (passChosen) passChosen.setAttribute('required', '');
+            if (passRand) passRand.setAttribute('required', '');
+
+            if (passChosen && passChosen.checked) {
+                if (passDiv) passDiv.style.display = "block";
+                if (passInput) passInput.setAttribute('required', '');
+            }
         }
     }
 
@@ -48,10 +77,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             title: formData.get('title'),
             message: formData.get('message'),
             method: formData.get('method'),
+
+            algSim_bits: formData.get('algSim_bits'), 
+            symmetric_key_source: formData.get('symmetric_key_source'), 
             password: formData.get('pass'),
+
+            rsa_bits: formData.get('rsa_bits'),
+            rsa_key_type: formData.get('rsa_key_type'), 
+
             hmac_hash: formData.get('sig_hash'),
-            sig_hash: formData.get('hash_signature'),
-            rsa_bits: formData.get('rsa_bits')
+            sig_hash: formData.get('hash_signature')
         };
 
         fetch(url + '/deposit', {
@@ -79,5 +114,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     //mostra só as opçoes possiveis de cada metodo
     methodSelect.addEventListener("change", setMethodOptions);
+    passRand.addEventListener('change', setMethodOptions);
+    passChosen.addEventListener('change', setMethodOptions);
 
 });
+

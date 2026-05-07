@@ -2,11 +2,13 @@ import hashlib
 import os
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.exceptions import InvalidKey
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
-from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.primitives import padding as sym_padding
 
 load_dotenv()
 
@@ -56,9 +58,9 @@ def sign_digitally(sig_hash, message):
 
     signature = sk.sign(
         message,
-        padding.PSS(
-            mgf=padding.MGF1(hash_func),
-            salt_length=padding.PSS.MAX_LENGTH
+        asym_padding.PSS(
+            mgf=asym_padding.MGF1(hash_func),
+            salt_length=asym_padding.PSS.MAX_LENGTH
         ),
         hash_func
     )
@@ -81,14 +83,46 @@ def verify_signature(signature, message, sig_hash):
         pk.verify(
             signature,
             message,
-            padding.PSS(
-                mgf=padding.MGF1(hash_func),
-                salt_length=padding.PSS.MAX_LENGTH
+            sym_padding.PSS(
+                mgf=sym_padding.MGF1(hash_func),
+                salt_length=sym_padding.PSS.MAX_LENGTH
             ),
             hash_func
         )
         return True
     except Exception:
+        return False
+    
+#pega na password e deriva de forma a ficar aleatorio e com tamanho maior
+#devolve a chave no formato certo e o salt usado no processo
+def deriveKey(key):
+    salt = os.urandom(16)
+    keyBytes = key.encode()
+    
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=1_200_000,
+    )
+
+    key = kdf.derive(keyBytes)
+    return salt, key
+
+def verifyDerivedKey(salt, storedKey, insertedKey):
+    password = insertedKey.encode()
+
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=1_200_000,
+    )
+
+    try:
+        kdf.verify(password, storedKey)        
+        return True
+    except InvalidKey:
         return False
     
 
@@ -111,7 +145,7 @@ def aes256_cbc_encrypt(message, key, iv):
     if len(iv) != 16:
         raise ValueError("CBC IV must be 16 bytes")
 
-    padder = padding.PKCS7(128).padder()
+    padder = sym_padding.PKCS7(128).padder()
     padded_message = padder.update(message.encode('utf-8'))
     padded_message += padder.finalize()
 
@@ -125,7 +159,7 @@ def decrypt_AES_CBC(ciphertext, key, iv):
     decryptor = Cipher(algorithms.AES(key), modes.CBC(iv)).decryptor()
     decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
 
-    unpadder = padding.PKCS7(128).unpadder()
+    unpadder = sym_padding.PKCS7(128).unpadder()
     unpadded_data = unpadder.update(decrypted_data)
     unpadded_data += unpadder.finalize()
     return unpadded_data.decode('utf-8')
@@ -143,7 +177,7 @@ def aes256_ctr_encrypt(message, key, iv):
     if len(iv) != 16:
         raise ValueError("CTR IV must be 16 bytes")
 
-    padder = padding.PKCS7(128).padder()
+    padder = sym_padding.PKCS7(128).padder()
     padded_message = padder.update(message.encode('utf-8'))
     padded_message += padder.finalize()
 
@@ -157,7 +191,7 @@ def decrypt_AES_CTR(ciphertext, key, iv):
     decryptor = Cipher(algorithms.AES(key), modes.CTR(iv)).decryptor()
     decrypted_data = decryptor.update(ciphertext) + decryptor.finalize()
 
-    unpadder = padding.PKCS7(128).unpadder()
+    unpadder = sym_padding.PKCS7(128).unpadder()
     unpadded_data = unpadder.update(decrypted_data)
     unpadded_data += unpadder.finalize()
     return unpadded_data.decode('utf-8')
