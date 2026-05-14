@@ -366,43 +366,51 @@ def create_newMessage():
 @app.route("/message/decrypt", methods=["POST"])
 @login_required
 def decrypt_message_route():
+    #ir buscar a informação inicial
     cofre_id = request.form.get('vault_id')
     secret = request.form.get('secret')
 
+    #verificar se a info existe
     if not cofre_id or not secret:
-        return render_template('open_vault.html', error="Todos os campos são obrigatórios!")
+        return render_template('open_vault.html', error="Vault id and secret key are required!")
 
+    #verificar se o utilizador está logged in e se é válido
+    #se não redirecionar para o login
     token = request.cookies.get('token')
     SECRET_KEY = os.getenv("SECRET_KEY")
     try:
         if not token or not SECRET_KEY:
-            raise Exception("Sessão expirada")
+            raise Exception("Session expired")
         decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     except:
         return redirect(url_for('login'))
     
     email = decoded.get("email")
 
+    #inicializar base de dados
     db = get_db()
     cursor = db.cursor()
 
+    #verificar utilizador na base de dados
     user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
     if not user:
-        return render_template('open_vault.html', error="Utilizador inválido.")
+        return render_template('open_vault.html', error="Invalid user.")
     
+    #ir buscar todos os dados necessários para a desencriptar
     resultado = cursor.execute("""
-        SELECT c.tipoDeCifra, c.mensagem_id
+        SELECT c.tipoDeCifra, c.mensagem_id, c.codigoDeAutenticacao, c.assinaturaDigital, 
+               c.hmacHash, c.sigHash
         FROM cofre c
         WHERE c.id = ?
     """, (cofre_id,)).fetchone()
 
     if not resultado:
-        return render_template('open_vault.html', error="Cofre não encontrado.")
+        return render_template('open_vault.html', error="Vault not found!")
     
     mensagem = None
 
     if resultado:
-        method, mensagem_id = resultado
+        method, mensagem_id, hmacAuth, signDig, hmacHash, sigHash = resultado
 
         conteudo_cifrado = cursor.execute("""
             SELECT m.conteudoCifrado
@@ -413,9 +421,18 @@ def decrypt_message_route():
     if conteudo_cifrado:
         conteudo_cifrado = conteudo_cifrado[0]
 
+    #verificar o hmac do criptograma, de forma a saber se o mesmo sofreu altereações
+    #recalculamos o hmac a partir do criptograma
+    hmacNow = HMAC_authentication(hmacHash, conteudo_cifrado)
+    hmacVer = False
+
+    #comparamos com o hmac guardado
+    if hmacNow == hmacAuth:
+        hmacVer = True
+
     try:
         if method == "rsa":
-            mensagem = decrypt_message_rsa(secret, conteudo_cifrado)
+            mensagem = decrypt_message_rsa(conteudo_cifrado, secret)
         elif method == "random-key":
             # mensagem = decrypt_message_symmetric(secret, conteudo_cifrado)
             pass
@@ -424,12 +441,17 @@ def decrypt_message_route():
             return render_template('open_vault.html', error="Método de cifra não suportado.")
 
     except Exception as e:
+        print(e)
         return render_template('open_vault.html', error="Falha na decifração. Verifique o segredo.")
+
+    #verificar a assinatura digital do texto limpo
+    sig_bytes = base64.b64decode(signDig)
+    sigVer = verify_signature(sig_bytes, mensagem, sigHash)
 
     return render_template(
         'open_result.html',
-        vault_id=cofre_id,      
-        hmac_ok=True,          
-        sig_ok=True,            
-        message=mensagem       
+        vault_id=cofre_id,
+        hmac_ok=hmacVer,
+        sig_ok=sigVer,
+        message=mensagem   
     )

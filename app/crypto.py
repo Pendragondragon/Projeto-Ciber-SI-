@@ -1,5 +1,6 @@
 import hashlib
 import os
+import base64
 from dotenv import load_dotenv
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
@@ -86,9 +87,9 @@ def verify_signature(signature, message, sig_hash):
         pk.verify(
             signature,
             message,
-            sym_padding.PSS(
-                mgf=sym_padding.MGF1(hash_func),
-                salt_length=sym_padding.PSS.MAX_LENGTH
+            asym_padding.PSS(
+                mgf=asym_padding.MGF1(hash_func),
+                salt_length=asym_padding.PSS.MAX_LENGTH
             ),
             hash_func
         )
@@ -240,6 +241,15 @@ def encrypt_message_rsa(message, public_key: bytes) -> bytes:
 
 
 def decrypt_message_rsa(encrypted_message: bytes, private_key: bytes) -> str:
+    #garantir que a mensagem esta no formato certo, em bytes
+    if isinstance(private_key, str):
+        private_key = private_key.encode('utf-8')
+
+    if isinstance(encrypted_message, str):
+        try:
+            encrypted_message = base64.b64decode(encrypted_message)
+        except:
+            encrypted_message = encrypted_message.encode('utf-8')
 
     sk = rsa.PrivateKey.load_pkcs1(private_key)
     decrypted_message = rsa.decrypt(encrypted_message, sk).decode()
