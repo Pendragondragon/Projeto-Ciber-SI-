@@ -43,6 +43,16 @@
                 </span>
             </div>
 
+             {% if title %}
+            <div class="terminal">
+                <p style="font-size: 0.7rem; color: var(--indigo-400); margin-bottom: 0.5rem; font-weight: bold;">
+                    TITLE:
+                </p>
+
+                <pre>{{ title }}</pre>
+            </div>
+            {% endif %}
+
             {% if message %}
             <div class="terminal">
                 <p style="font-size: 0.7rem; color: var(--indigo-400); margin-bottom: 0.5rem; font-weight: bold;">
