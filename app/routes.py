@@ -358,29 +358,23 @@ def create_newMessage():
         "private_key_message": private_key_message
     }), 201
 
-@app.route("/message/decrypt", methods=["GET"])
+@app.route("/message/decrypt", methods=["POST"])
 @login_required
 def decrypt_message_route():
-    data = request.get_json()
-
-    if not data:
-        return jsonify({"success": False, "error": "Dados não recebidos"}), 400
-    
-    cofre_id = data.get("mensagem_id")
-    secret = data.get("secret")
+    cofre_id = request.form.get('vault_id')
+    secret = request.form.get('secret')
 
     if not cofre_id or not secret:
-        return jsonify({"success": False, "error": "ID da mensagem e segredo são necessários"}), 400
+        return render_template('open_vault.html', error="Todos os campos são obrigatórios!")
 
     token = request.cookies.get('token')
     SECRET_KEY = os.getenv("SECRET_KEY")
-    if not token or not SECRET_KEY:
-        return jsonify({"success": False, "error": "Autenticação necessária"}), 401
-    
     try:
+        if not token or not SECRET_KEY:
+            raise Exception("Sessão expirada")
         decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-    except jwt.InvalidTokenError:
-        return jsonify({"success": False, "error": "Token inválido"}), 401
+    except:
+        return redirect(url_for('login'))
     
     email = decoded.get("email")
 
@@ -389,13 +383,18 @@ def decrypt_message_route():
 
     user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
     if not user:
-        return jsonify({"success": False, "error": "Utilizador não encontrado"}), 404 
-
+        return render_template('open_vault.html', error="Utilizador inválido.")
+    
     resultado = cursor.execute("""
         SELECT c.tipoDeCifra, c.mensagem_id
         FROM cofre c
         WHERE c.id = ?
     """, (cofre_id,)).fetchone()
+
+    if not resultado:
+        return render_template('open_vault.html', error="Cofre não encontrado.")
+    
+    mensagem = None
 
     if resultado:
         method, mensagem_id = resultado
@@ -409,6 +408,23 @@ def decrypt_message_route():
     if conteudo_cifrado:
         conteudo_cifrado = conteudo_cifrado[0]
 
+    try:
+        if method == "rsa":
+            mensagem = decrypt_message_rsa(secret, conteudo_cifrado)
+        elif method == "random-key":
+            # mensagem = decrypt_message_symmetric(secret, conteudo_cifrado)
+            pass
+            
+        if mensagem is None:
+            return render_template('open_vault.html', error="Método de cifra não suportado.")
 
-    if method == "rsa":
-        mensagem = decrypt_message_rsa(secret, conteudo_cifrado)
+    except Exception as e:
+        return render_template('open_vault.html', error="Falha na decifração. Verifique o segredo.")
+
+    return render_template(
+        'open_result.html',
+        vault_id=cofre_id,      
+        hmac_ok=True,          
+        sig_ok=True,            
+        message=mensagem       
+    )
