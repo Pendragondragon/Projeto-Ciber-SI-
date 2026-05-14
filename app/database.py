@@ -37,5 +37,14 @@ cursor.execute("""
     )
 """)
 
+cursor.execute("""
+    CREATE TABLE IF NOT EXISTS rsaKey (
+        id INTEGER PRIMARY KEY,
+        utilizador_id INTEGER,
+        pkRsa TEXT,
+        FOREIGN KEY (utilizador_id) REFERENCES user(id)
+    )
+""")
+
 connection.commit()
 connection.close()

@@ -1,5 +1,88 @@
 const url = "/message";
 
+function showRsaPopup(privateKey, fallbackMessage) {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4';
+
+        const modal = document.createElement('div');
+        modal.className = 'w-full max-w-2xl rounded-lg bg-gray-800 p-6 text-white shadow-xl';
+
+        const title = document.createElement('h2');
+        title.className = 'mb-3 text-xl font-semibold';
+        title.textContent = privateKey ? 'Guarde a sua chave privada' : 'Chave privada';
+
+        const description = document.createElement('p');
+        description.className = 'mb-4 text-sm text-gray-200';
+
+        const actions = document.createElement('div');
+        actions.className = 'mt-4 flex justify-end gap-3';
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'rounded-md bg-gray-600 px-4 py-2 text-sm font-semibold hover:bg-gray-500';
+        closeButton.textContent = 'Fechar';
+        closeButton.addEventListener('click', () => {
+            overlay.remove();
+            resolve();
+        });
+
+        if (privateKey) {
+            description.textContent = 'Guarde esta chave privada num local seguro. Vai precisar dela para abrir o cofre.';
+
+            const keyBox = document.createElement('textarea');
+            keyBox.className = 'h-56 w-full rounded-md bg-gray-900 p-3 text-xs text-green-200 outline-none';
+            keyBox.readOnly = true;
+            keyBox.value = privateKey;
+
+            const copyButton = document.createElement('button');
+            copyButton.type = 'button';
+            copyButton.className = 'rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500';
+            copyButton.textContent = 'Copiar chave';
+            copyButton.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(privateKey);
+                    mostrarNotificacao('Chave privada copiada!', 'success');
+                } catch (error) {
+                    mostrarNotificacao('Nao foi possivel copiar a chave.', 'error');
+                }
+            });
+
+            const downloadButton = document.createElement('button');
+            downloadButton.type = 'button';
+            downloadButton.className = 'rounded-md bg-green-600 px-4 py-2 text-sm font-semibold hover:bg-green-500';
+            downloadButton.textContent = 'Download chave';
+            downloadButton.addEventListener('click', () => {
+                const blob = new Blob([privateKey], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'private_key.pem';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                mostrarNotificacao('Chave privada descarregada!', 'success');
+            });
+
+            actions.appendChild(copyButton);
+            actions.appendChild(downloadButton);
+            modal.appendChild(title);
+            modal.appendChild(description);
+            modal.appendChild(keyBox);
+        } else {
+            description.textContent = fallbackMessage || 'Espero que nao tenha perdido a sua chave privada.';
+            modal.appendChild(title);
+            modal.appendChild(description);
+        }
+
+        actions.appendChild(closeButton);
+        modal.appendChild(actions);
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+    });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
     const methodSelect = document.getElementById('method');
     const rsa_bits = document.getElementById('rsaDiv');
@@ -100,6 +183,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    if(payload.method === 'rsa') {
+                        showRsaPopup(data.private_key, 'Vault created successfully!').then(() => {
+                            window.location.href = "/deposit";
+                        });
+                    } 
+                    
                     mostrarNotificacao('Vault created successfully!', 'success');
 
                     setTimeout(() => {

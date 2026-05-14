@@ -10,6 +10,9 @@ from cryptography.exceptions import InvalidKey
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives import padding as sym_padding
 
+import rsa
+import sqlite3
+
 load_dotenv()
 
 def HMAC_authentication(hmac_hash, cryptogram):
@@ -218,3 +221,74 @@ def decrypt_chacha20(ciphertext, key, iv):
     
     plaintext = decryptor.update(ciphertext)
     return plaintext.decode('utf-8')
+
+#RSA
+
+def generate_keys(bits: int) -> tuple[bytes, bytes]:
+
+    public_key, private_key = rsa.newkeys(bits)
+
+    return public_key.save_pkcs1("PEM"), private_key.save_pkcs1("PEM")
+
+
+def encrypt_message(message, public_key: bytes) -> bytes:
+    
+    pk = rsa.PublicKey.load_pkcs1(public_key)
+    encrypted_message = rsa.encrypt(message.encode(), pk)
+
+    return encrypted_message
+
+
+def decrypt_message(encrypted_message: bytes, private_key: bytes) -> str:
+
+    sk = rsa.PrivateKey.load_pkcs1(private_key)
+    decrypted_message = rsa.decrypt(encrypted_message, sk).decode()
+
+    return decrypted_message
+
+def pk_user(user_id: int, bits, db=None) -> tuple[bytes, bytes]:
+    # Use provided db connection or create a new one for thread safety
+    if db is None:
+        db = sqlite3.connect("database.db")
+        local_cursor = db.cursor()
+        should_close = True
+    else:
+        local_cursor = db.cursor()
+        should_close = False
+
+    try:
+        local_cursor.execute(
+            """
+            SELECT 1
+            FROM rsaKey
+            WHERE utilizador_id = ?
+            LIMIT 1
+            """,
+            (user_id,),
+        )
+
+        if local_cursor.fetchone() is not None:
+            public_key = local_cursor.execute(
+                """
+                SELECT pkRsa
+                FROM rsaKey
+                WHERE utilizador_id = ?
+                """,
+                (user_id,),
+            ).fetchone()[0]
+            return public_key, None
+
+        public_key, private_key = generate_keys(bits)
+        local_cursor.execute(
+            """
+            INSERT INTO rsaKey (utilizador_id, pkRsa)
+            VALUES (?, ?)
+            """,
+            (user_id, public_key),
+        )
+        db.commit()
+
+        return public_key, private_key
+    finally:
+        if should_close:
+            db.close()
