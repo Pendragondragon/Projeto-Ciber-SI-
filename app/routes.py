@@ -130,6 +130,11 @@ def deposit():
 def open_vault():
     return render_template("open_vault.html")
 
+@app.route("/open_result")
+@login_required
+def open_result():
+    return render_template("open_result.html")
+
 @app.route("/profile")
 @login_required
 def profile():
