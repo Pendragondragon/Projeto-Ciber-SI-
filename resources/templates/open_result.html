@@ -23,7 +23,7 @@
                 <span style="color: var(--text-gray)">Vault ID</span>
 
                 <span style="font-family: monospace; color: var(--indigo-400)">
-                    #{{ vault_id }}
+                    #{{ vault_id if vault_id else '???' }}
                 </span>
             </div>
 
