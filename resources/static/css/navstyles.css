@@ -15,6 +15,7 @@ html, body {
 /* Navbar Container */
 .navbar {
     position: relative;
+    z-index: 20;
     background-color: rgba(31, 41, 55, 0.5); /* Gray-800/50 */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
