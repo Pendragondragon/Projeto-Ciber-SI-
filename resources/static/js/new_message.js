@@ -103,34 +103,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const BtnCreateVault = document.getElementById('createVault');
 
-    const messageArea = document.getElementById('message');
-    const limitDisplay = document.getElementById('limit');
-    const currentDisplay = document.getElementById('current');
-
-    //como cada rsa size tem um tamanho especifico de caracteres temos um listener para mudar quando se mudar o tamanho rsa
-    function updateLimit() {
-        const bits = parseInt(rsaSelect.value);
-
-        const newLimit = (bits / 8) - 11;
-
-        messageArea.setAttribute('maxlength', newLimit);
-
-        limitDisplay.textContent = newLimit;
-
-        if (messageArea.value.length > newLimit) {
-            messageArea.value = messageArea.value.substring(0, newLimit);
-            currentDisplay.textContent = newLimit;
-            mostrarNotificacao('Max number of characters achieved!', 'success');
-        }
-    }
-
     //como a opcao default nao contem nenhuma opcional
     //como default podemos esconder tudo
     function setMethodOptions() {
         const selectedValue = methodSelect.value;
 
         //esconde todos os que sao opcionais
-        [rsa_bits, whichKeyDiv, chosenRandDiv, algSimDiv, pass].forEach(div => {
+        [rsaDiv, whichKeyDiv, chosenRandDiv, algSimDiv, pass].forEach(div => {
             if (div) div.style.display = "none";
         });
 
@@ -171,6 +150,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         e.preventDefault();
         //por ser um form
 
+        const spinner = document.getElementById("loadingSpinner");
+
+        spinner.classList.remove("hidden");
+
         const form = document.querySelector('form');
         if (!form.reportValidity()) return;
         const formData = new FormData(form);
@@ -182,12 +165,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             message: formData.get('message'),
             method: formData.get('method'),
 
-            algSim_bits: formData.get('algSim_bits'),
-            symmetric_key_source: formData.get('symmetric_key_source'),
+            algSim_bits: formData.get('algSim_bits'), 
+            symmetric_key_source: formData.get('symmetric_key_source'), 
             password: formData.get('pass'),
 
             rsa_bits: formData.get('rsa_bits'),
-            rsa_key_type: formData.get('rsa_key_type'),
+            rsa_key_type: formData.get('rsa_key_type'), 
 
             hmac_hash: formData.get('sig_hash'),
             sig_hash: formData.get('hash_signature')
@@ -204,14 +187,16 @@ document.addEventListener("DOMContentLoaded", async () => {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    if (payload.method === 'rsa') {
+                    spinner.classList.add("hidden");
+                    if(payload.method === 'rsa') {
                         showRsaPopup(data.private_key, 'Vault created successfully!').then(() => {
                             window.location.href = "/deposit";
                         });
-                    }
-
+                    } 
+                    
                     mostrarNotificacao('Vault created successfully!', 'success');
                 } else {
+                    spinner.classList.add("hidden");
                     const mensagem = data.message || data.error || 'Invalid Values.';
                     mostrarNotificacao(mensagem, 'error');
                 }
@@ -222,13 +207,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     methodSelect.addEventListener("change", setMethodOptions);
     passRand.addEventListener('change', setMethodOptions);
     passChosen.addEventListener('change', setMethodOptions);
-
-    //limite de chars a inserir
-    rsaSelect.addEventListener('change', updateLimit);
-
-    messageArea.addEventListener('input', () => {
-        currentDisplay.textContent = messageArea.value.length;
-    });
 
 });
 
