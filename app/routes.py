@@ -351,6 +351,9 @@ def create_newMessage():
         "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id)
     )
+
+    cofre_id = cursor.lastrowid
+    
     db.commit()
 
     return jsonify({
@@ -358,7 +361,8 @@ def create_newMessage():
         "message": "Mensagem guardada com sucesso!",
         "mensagem_id": mensagem_id,
         "private_key": private_key_data,
-        "private_key_message": private_key_message
+        "private_key_message": private_key_message,
+        "vault_id": cofre_id
     }), 201
 
 @app.route("/message/decrypt", methods=["POST"])

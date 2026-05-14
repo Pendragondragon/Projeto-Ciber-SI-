@@ -1,6 +1,6 @@
 const url = "/message";
 
-function showRsaPopup(privateKey, fallbackMessage) {
+function showRsaPopup(privateKey, vault_id, fallbackMessage) {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4';
@@ -11,6 +11,10 @@ function showRsaPopup(privateKey, fallbackMessage) {
         const title = document.createElement('h2');
         title.className = 'mb-3 text-xl font-semibold';
         title.textContent = privateKey ? 'Guarde a sua chave privada' : 'Chave privada';
+
+        const idBadge = document.createElement('div');
+        idBadge.className = 'mb-4 inline-block rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-1 text-xs font-mono font-bold tracking-wider text-indigo-400';
+        idBadge.textContent = `Vault id: #${vault_id}`;
 
         const description = document.createElement('p');
         description.className = 'mb-4 text-sm text-gray-200';
@@ -68,6 +72,7 @@ function showRsaPopup(privateKey, fallbackMessage) {
             actions.appendChild(copyButton);
             actions.appendChild(downloadButton);
             modal.appendChild(title);
+            modal.appendChild(idBadge); 
             modal.appendChild(description);
             modal.appendChild(keyBox);
         } else {
@@ -114,11 +119,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //como cifras simetricas nao tem limite, podemos por um numero grande
         //so ter cuidado paranao demorar muito tempo
-        if (selectedValue == "random-key"){
+        if (selectedValue == "random-key") {
             newLimit = 10000;
-        }else{
+        } else {
             const bits = parseInt(rsaSelect.value) || 2048;
-    
+
             newLimit = (bits / 8) - 11;
         }
 
@@ -216,7 +221,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             .then(data => {
                 if (data.success) {
                     if (payload.method === 'rsa') {
-                        showRsaPopup(data.private_key, 'Vault created successfully!').then(() => {
+                        showRsaPopup(data.private_key, data.vault_id, 'Vault created successfully!').then(() => {
                             window.location.href = "/deposit";
                         });
                     }
