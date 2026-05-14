@@ -1,6 +1,5 @@
 :root {
         --bg-gray: #111827;
-        --card-bg: rgba(255, 255, 255, 0.03);
         --indigo-400: #818cf8;
         --indigo-500: #6366f1;
         --text-white: #ffffff;
@@ -14,161 +13,73 @@
         min-height: 100vh;
         background-color: var(--bg-gray);
         position: relative;
-        isolation: isolate;
         padding: 48px 24px;
         font-family: ui-sans-serif, system-ui, sans-serif;
-    }
-
-    /* Matching the Pricing Page Glow */
-    .bg-glow {
-        position: absolute;
-        inset: 0;
-        z-index: -10;
-        overflow: hidden;
-        pointer-events: none;
-        filter: blur(64px);
-    }
-    .glow-shape {
-        margin-left: auto;
-        margin-right: auto;
-        aspect-ratio: 1155/678;
-        width: 72rem;
-        background: linear-gradient(to top right, #ff80b5, #9089fc);
-        opacity: 0.15;
-        clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%);
+        color: var(--text-white);
     }
 
     .vault-container {
-        max-width: 48rem;
+        max-width: 40rem;
         margin: 0 auto;
     }
 
-    .vault-header {
-        text-align: center;
-        margin-bottom: 2.5rem;
-    }
-
+    .vault-header { text-align: center; margin-bottom: 2rem; }
+    
     .pre-title {
         color: var(--indigo-400);
-        font-weight: 600;
-        font-size: 1.1rem;
+        font-size: 0.75rem;
         text-transform: uppercase;
+        font-weight: 700;
         letter-spacing: 0.1em;
     }
 
-    .main-title {
-        color: var(--text-white);
-        font-size: 2.25rem;
-        font-weight: 700;
-        margin-top: 0.5rem;
-        letter-spacing: -0.025em;
-    }
-
     .vault-card {
-        background-color: rgba(31, 41, 55, 0.5); /* gray-800 with opacity */
+        background: rgba(31, 41, 55, 0.5);
         border: 1px solid var(--border);
-        border-radius: 1.5rem;
-        padding: 2.5rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        border-radius: 1rem;
+        padding: 2rem;
+        backdrop-filter: blur(8px);
     }
-
-    .info-grid {
-        display: grid;
-        grid-template-cols: 1fr 1fr;
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-
-    .info-item {
-        background: rgba(0,0,0,0.2);
-        padding: 1rem;
-        border-radius: 0.75rem;
-        border: 1px solid var(--border);
-    }
-
-    .info-item label {
-        display: block;
-        font-size: 0.75rem;
-        color: var(--text-gray);
-        text-transform: uppercase;
-        font-weight: 700;
-        margin-bottom: 0.25rem;
-    }
-
-    .value { font-weight: 600; font-size: 1.125rem; }
-    .mono { color: var(--indigo-400); font-family: monospace; }
-
-    .status-list { display: flex; flex-direction: column; gap: 0.75rem; }
 
     .status-row {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        color: var(--text-gray);
-        padding: 1rem 1.25rem;
-        background: rgba(255,255,255,0.02);
-        border-radius: 1rem;
-        border: 1px solid var(--border);
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--border);
     }
 
     .badge {
-        font-size: 0.75rem;
-        font-weight: 700;
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-    }
-
-    .badge.ok { background: rgba(52, 211, 153, 0.1); color: var(--success); border: 1px solid rgba(52, 211, 153, 0.2); }
-    .badge.bad { background: rgba(248, 113, 113, 0.1); color: var(--danger); border: 1px solid rgba(248, 113, 113, 0.2); }
-
-    .message-container { margin-top: 2.5rem; }
-
-    .terminal-label {
-        font-size: 0.75rem;
-        color: var(--indigo-400);
+        font-size: 0.7rem;
+        font-weight: 800;
+        padding: 2px 8px;
+        border-radius: 4px;
         text-transform: uppercase;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-        display: block;
     }
 
-    .terminal-window {
-        background: #030712; /* gray-950 */
-        border: 1px solid var(--border);
-        border-radius: 0.75rem;
+    .badge.ok { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .badge.bad { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
+
+    .terminal {
+        background: #030712;
         padding: 1.5rem;
+        border-radius: 0.5rem;
+        margin-top: 1.5rem;
+        border: 1px solid var(--border);
     }
 
-    pre {
-        color: #e0e7ff;
-        font-family: monospace;
-        white-space: pre-wrap;
-        margin: 0;
-        font-size: 0.875rem;
-        line-height: 1.5;
-    }
+    pre { color: #e0e7ff; font-family: monospace; white-space: pre-wrap; margin: 0; }
 
-    .btn-primary {
+    .btn {
         display: block;
-        margin-top: 2.5rem;
-        background-color: var(--indigo-500);
+        background: var(--indigo-500);
         color: white;
         text-align: center;
         padding: 0.75rem;
         border-radius: 0.5rem;
-        font-weight: 600;
         text-decoration: none;
-        transition: background 0.2s;
+        margin-top: 2rem;
+        font-weight: 600;
     }
-
-    .btn-primary:hover { background-color: var(--indigo-400); }
-
-    .error-box {
-        margin-top: 1.5rem;
-        padding: 1rem;
-        border-radius: 0.75rem;
-        background: rgba(248, 113, 113, 0.1);
-        border: 1px solid var(--danger);
-        color: var(--danger);
-        font-size: 0.875rem;
-    }
+    
+    .animate-pulse { animation: pulse 2s infinite; }
+    @keyframes pulse { 50% { opacity: .5; } }

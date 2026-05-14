@@ -1,70 +1,96 @@
 {% extends "navbar.html" %}
 
 {% block content %}
-<div class="vault-wrapper">
-    <!-- The same background glow from your pricing page -->
-    <div aria-hidden="true" class="bg-glow">
-        <div class="glow-shape"></div>
-    </div>
+<link rel="stylesheet" href="navstyles.css" />
+    <link rel="stylesheet" href="OpenResult.css" />
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-wrapper">
+                <div class="mobile-menu-toggle">
+                    <button type="button" id="menu-button">
+                        <i class="fa-solid fa-bars icon-open"></i>
+                    </button>
+                </div>
 
+                <div class="nav-main">
+                    <div class="logo">
+                        <img src="{{ url_for('static', filename='imagens/iconFundo.png') }}" alt="logo">
+                    </div>
+                    <ul class="nav-links">
+                        <li><a href="{{ url_for('index') }}" class="nav-item">Home</a></li>
+                        <li><a href="{{ url_for('deposit') }}" class="nav-item">Create Message</a></li>
+                        <li><a href="{{ url_for('open_vault') }}" class="nav-item">Open Vault</a></li>
+                    </ul>
+                </div>
+
+                <div class="nav-actions">
+                    <button type="button" class="notif-btn">
+                        <i class="fa-regular fa-bell"></i>
+                    </button>
+                    <div class="profile-dropdown">
+                        <button class="profile-btn" id="user-menu-button">
+                            <i class="fa-solid fa-circle-user"></i>
+                        </button>
+                        <div class="dropdown-menu" id="user-menu">
+                            <a href="#">Your profile</a>
+                            <a href="#">Settings</a>
+                            <a href="#">Sign out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mobile-nav-content" id="mobile-menu" hidden>
+            <div class="mobile-links">
+                <a href="{{ url_for('index') }}">Home</a>
+                <a href="{{ url_for('deposit') }}">Message</a>
+                <a href="{{ url_for('open_vault') }}">Open Vault</a>
+            </div>
+        </div>
+    </nav>
+<div class="vault-wrapper">
     <div class="vault-container">
         <header class="vault-header">
-            <h2 class="pre-title">Security Report</h2>
-            <h1 class="main-title">Vault Opening Result</h1>
+            <p class="pre-title animate-pulse">● Decrypting Data Stream...</p>
+            <h1 style="font-size: 2rem; font-weight: 700; margin-top: 0.5rem;">Vault Opening Result</h1>
         </header>
 
         <section class="vault-card">
-            <div class="info-grid">
-                <div class="info-item">
-                    <label>Vault ID</label>
-                    <span class="value mono">#{{ vault_id }}</span>
-                </div>
-                <div class="info-item">
-                    <label>Cipher Engine</label>
-                    <span class="value text-white">{{ cipher_choice }}</span>
-                </div>
+            <div class="status-row">
+                <span style="color: var(--text-gray)">Vault ID</span>
+                <span style="font-family: monospace; color: var(--indigo-400)">#{{ vault_id }}</span>
+            </div>
+            
+            <div class="status-row">
+                <span style="color: var(--text-gray)">HMAC Status</span>
+                <span class="badge {{ 'ok' if hmac_ok else 'bad' }}">
+                    {{ 'Passed' if hmac_ok else 'Failed' }}
+                </span>
             </div>
 
-            <div class="status-list">
-                <div class="status-row">
-                    <span>HMAC Verification</span>
-                    <span class="badge {{ 'ok' if hmac_ok else 'bad' }}">
-                        {{ 'OK' if hmac_ok else 'FAILED' }}
-                    </span>
-                </div>
-                <div class="status-row">
-                    <span>Decryption Stream</span>
-                    <span class="badge {{ 'ok' if decrypt_ok else 'bad' }}">
-                        {{ 'OK' if decrypt_ok else 'FAILED' }}
-                    </span>
-                </div>
-                <div class="status-row">
-                    <span>Digital Signature</span>
-                    <span class="badge {{ 'ok' if sig_ok else 'bad' }}">
-                        {{ 'VERIFIED' if sig_ok else 'INVALID' }}
-                    </span>
-                </div>
+            <div class="status-row">
+                <span style="color: var(--text-gray)">Signature</span>
+                <span class="badge {{ 'ok' if sig_ok else 'bad' }}">
+                    {{ 'Verified' if sig_ok else 'Invalid' }}
+                </span>
             </div>
-
-            {% if error %}
-            <div class="error-box">
-                <p>{{ error }}</p>
-            </div>
-            {% endif %}
 
             {% if message %}
-            <div class="message-container">
-                <label class="terminal-label">Decrypted Message</label>
-                <div class="terminal-window">
-                    <pre>{{ message }}</pre>
-                </div>
+            <div class="terminal">
+                <p style="font-size: 0.7rem; color: var(--indigo-400); margin-bottom: 0.5rem; font-weight: bold;">OUTPUT_DATA:</p>
+                <pre>{{ message }}</pre>
             </div>
             {% endif %}
 
-            <div class="actions">
-                <a href="/" class="btn-primary">Return to Console</a>
+            {% if error %}
+            <div style="color: var(--danger); background: rgba(248, 113, 113, 0.1); padding: 1rem; border-radius: 0.5rem; margin-top: 1rem; font-size: 0.9rem;">
+                <strong>Error:</strong> {{ error }}
             </div>
+            {% endif %}
+
+            <a href="/" class="btn">Return to Console</a>
         </section>
     </div>
 </div>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/OpenResult.css') }}" />
+{% endblock %}
