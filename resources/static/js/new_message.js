@@ -190,10 +190,6 @@ document.addEventListener("DOMContentLoaded", async () => {
                     } 
                     
                     mostrarNotificacao('Vault created successfully!', 'success');
-
-                    setTimeout(() => {
-                        window.location.href = "/deposit";
-                    }, 1500);
                 } else {
                     const mensagem = data.message || data.error || 'Invalid Values.';
                     mostrarNotificacao(mensagem, 'error');
