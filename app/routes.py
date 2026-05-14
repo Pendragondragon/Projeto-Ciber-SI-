@@ -317,7 +317,7 @@ def create_newMessage():
         except (TypeError, ValueError):
             return jsonify({"success": False, "error": "Tamanho RSA invalido"}), 400
 
-        public_key, private_key = pk_user(utilizador_id, rsa_bits, db)
+        public_key, private_key = pk_user(utilizador_id, rsa_bits, rsa_key_type, db)
         if not public_key:
             return jsonify({"success": False, "error": "Erro ao obter chave pública"}), 500
         
@@ -327,8 +327,6 @@ def create_newMessage():
             private_key_data = private_key.decode("utf-8")
         
         cryptogram = encrypt_message_rsa(message, public_key)
-    elif method == "password":
-        return jsonify({"success": False, "error": "Password encryption not yet implemented"}), 501
     
     elif method == "random-key":
         return jsonify({"success": False, "error": "Random key encryption not yet implemented"}), 501

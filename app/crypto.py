@@ -267,7 +267,10 @@ def decrypt_message_rsa(encrypted_message, private_key):
     except Exception as e:
         return f"Critical error: {str(e)}"
 
-def pk_user(user_id: int, bits, db=None) -> tuple[bytes, bytes]:
+#apenas insiro na base de dados se nao existir
+#qualquer nova criada nao fica guardada
+#se quiserem uma nova geral tem de ter a opcao noutro lado
+def pk_user(user_id: int, bits, oldOrNewKey, db=None) -> tuple[bytes, bytes]:
     # Use provided db connection or create a new one for thread safety
     if db is None:
         db = sqlite3.connect("database.db")
@@ -278,37 +281,33 @@ def pk_user(user_id: int, bits, db=None) -> tuple[bytes, bytes]:
         should_close = False
 
     try:
-        local_cursor.execute(
-            """
-            SELECT 1
-            FROM rsaKey
-            WHERE utilizador_id = ?
-            LIMIT 1
-            """,
-            (user_id,),
-        )
+        local_cursor.execute("SELECT pkRsa FROM rsaKey WHERE utilizador_id = ?", (user_id,))
+        row = local_cursor.fetchone()
+        exists = row is not None
 
-        if local_cursor.fetchone() is not None:
-            public_key = local_cursor.execute(
-                """
-                SELECT pkRsa
-                FROM rsaKey
-                WHERE utilizador_id = ?
-                """,
-                (user_id,),
-            ).fetchone()[0]
-            return public_key, None
-
+        if oldOrNewKey == "no_antiga" and exists:
+            return row[0], None
+        
         public_key, private_key = generate_keys(bits)
-        local_cursor.execute(
-            """
-            INSERT INTO rsaKey (utilizador_id, pkRsa)
-            VALUES (?, ?)
-            """,
-            (user_id, public_key),
-        )
-        db.commit()
 
+            #if exists:
+            #   local_cursor.execute(
+            #        "UPDATE rsaKey SET pkRsa = ? WHERE utilizador_id = ?",
+            #        (public_key, user_id)
+            #    )
+            #else:
+            #    local_cursor.execute(
+            #        "INSERT INTO rsaKey (utilizador_id, pkRsa) VALUES (?, ?)",
+            #        (user_id, public_key)
+            #    )
+            
+        if not exists:
+            local_cursor.execute(
+                "INSERT INTO rsaKey (utilizador_id, pkRsa) VALUES (?, ?)",
+                (user_id, public_key)
+        )
+
+        db.commit()
         return public_key, private_key
     finally:
         if should_close:
