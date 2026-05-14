@@ -414,14 +414,18 @@ def decrypt_message_route():
     if resultado:
         method, mensagem_id, hmacAuth, signDig, hmacHash, sigHash = resultado
 
-        conteudo_cifrado = cursor.execute("""
-            SELECT m.conteudoCifrado
+        row_mensagem = cursor.execute("""
+            SELECT m.conteudoCifrado, m.titulo
             FROM mensagem m
             WHERE m.id = ?
         """, (mensagem_id,)).fetchone()
 
-    if conteudo_cifrado:
-        conteudo_cifrado = conteudo_cifrado[0]
+    if row_mensagem:
+        conteudo_cifrado = row_mensagem[0]
+        titulo = row_mensagem[1]
+    else:
+        return render_template('open_vault.html', error="Message not found!")
+
 
     #verificar o hmac do criptograma, de forma a saber se o mesmo sofreu altereações
     #recalculamos o hmac a partir do criptograma
@@ -455,5 +459,6 @@ def decrypt_message_route():
         vault_id=cofre_id,
         hmac_ok=hmacVer,
         sig_ok=sigVer,
+        title=titulo,
         message=mensagem   
     )
