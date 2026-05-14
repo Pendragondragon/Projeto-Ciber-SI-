@@ -317,7 +317,7 @@ def create_newMessage():
         except (TypeError, ValueError):
             return jsonify({"success": False, "error": "Tamanho RSA invalido"}), 400
 
-        public_key, private_key = pk_user(utilizador_id, rsa_bits, db)
+        public_key, private_key = pk_user(utilizador_id, rsa_bits, rsa_key_type, db)
         if not public_key:
             return jsonify({"success": False, "error": "Erro ao obter chave pública"}), 500
         
@@ -327,8 +327,6 @@ def create_newMessage():
             private_key_data = private_key.decode("utf-8")
         
         cryptogram = encrypt_message_rsa(message, public_key)
-    elif method == "password":
-        return jsonify({"success": False, "error": "Password encryption not yet implemented"}), 501
     
     elif method == "random-key":
         return jsonify({"success": False, "error": "Random key encryption not yet implemented"}), 501
@@ -353,6 +351,9 @@ def create_newMessage():
         "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id)
     )
+
+    cofre_id = cursor.lastrowid
+    
     db.commit()
 
     return jsonify({
@@ -360,7 +361,8 @@ def create_newMessage():
         "message": "Mensagem guardada com sucesso!",
         "mensagem_id": mensagem_id,
         "private_key": private_key_data,
-        "private_key_message": private_key_message
+        "private_key_message": private_key_message,
+        "vault_id": cofre_id
     }), 201
 
 @app.route("/message/decrypt", methods=["POST"])
@@ -412,14 +414,18 @@ def decrypt_message_route():
     if resultado:
         method, mensagem_id, hmacAuth, signDig, hmacHash, sigHash = resultado
 
-        conteudo_cifrado = cursor.execute("""
-            SELECT m.conteudoCifrado
+        row_mensagem = cursor.execute("""
+            SELECT m.conteudoCifrado, m.titulo
             FROM mensagem m
             WHERE m.id = ?
         """, (mensagem_id,)).fetchone()
 
-    if conteudo_cifrado:
-        conteudo_cifrado = conteudo_cifrado[0]
+    if row_mensagem:
+        conteudo_cifrado = row_mensagem[0]
+        titulo = row_mensagem[1]
+    else:
+        return render_template('open_vault.html', error="Message not found!")
+
 
     #verificar o hmac do criptograma, de forma a saber se o mesmo sofreu altereações
     #recalculamos o hmac a partir do criptograma
@@ -453,5 +459,6 @@ def decrypt_message_route():
         vault_id=cofre_id,
         hmac_ok=hmacVer,
         sig_ok=sigVer,
+        title=titulo,
         message=mensagem   
     )
