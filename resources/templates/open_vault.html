@@ -4,7 +4,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-8">
-    <form method="post">
+    <form method="POST" action="/message/decrypt">
         <div class="space-y-12">
             <div class="border-b border-white/10 pb-12">
                 <h1 class="text-3xl font-semibold text-white">Open Vault</h1>
@@ -50,7 +50,7 @@
 
         <div class="mt-6 flex items-center justify-end gap-x-6">
             <a href="{{ url_for('open_vault') }}" class="text-sm font-semibold text-white hover:text-gray-300">Cancel</a>
-            <button type="submit"
+            <button id="open_result" type="submit"
                 class="rounded-md bg-indigo-500 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition-colors">
                 Open Vault
             </button>
