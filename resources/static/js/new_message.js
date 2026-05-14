@@ -109,9 +109,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     //como cada rsa size tem um tamanho especifico de caracteres temos um listener para mudar quando se mudar o tamanho rsa
     function updateLimit() {
-        const bits = parseInt(rsaSelect.value);
+        const selectedValue = methodSelect.value;
+        let newLimit;
 
-        const newLimit = (bits / 8) - 11;
+        //como cifras simetricas nao tem limite, podemos por um numero grande
+        //so ter cuidado paranao demorar muito tempo
+        if (selectedValue == "random-key"){
+            newLimit = 10000;
+        }else{
+            const bits = parseInt(rsaSelect.value) || 2048;
+    
+            newLimit = (bits / 8) - 11;
+        }
 
         messageArea.setAttribute('maxlength', newLimit);
 
@@ -163,6 +172,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 if (passInput) passInput.setAttribute('required', '');
             }
         }
+
+        updateLimit();
     }
 
     setMethodOptions();
