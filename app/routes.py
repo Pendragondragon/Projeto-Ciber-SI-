@@ -1,5 +1,5 @@
 from main import app, get_db
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import g, render_template, request, jsonify, redirect, url_for, flash
 from flask_bcrypt import Bcrypt
 from services.auth_service import gerar_token_recuperacao, validar_token
 from services.email_service import enviar_email_recuperacao
@@ -27,7 +27,10 @@ def login_required(f):
             return render_template("login.html")
         
         try:
-            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+            g.current_user = decoded_token
+
         except jwt.InvalidTokenError:
             return render_template("login.html")
         
@@ -135,10 +138,40 @@ def open_vault():
 def open_result():
     return render_template("open_result.html")
 
-@app.route("/profile")
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
-    return render_template("profile.html")
+    if request.method == "POST":
+        new_username = request.form.get("uname")
+        new_email = request.form.get("email")
+
+        old_email = g.current_user["email"]
+
+        db = get_db()
+        cursor = db.cursor()
+
+        #Update user row on db    
+        cursor.execute(
+            "UPDATE user SET username = ?, email = ? WHERE email = ?",
+            (new_username, new_email, old_email)
+        )
+        db.commit()
+
+        SECRET_KEY = os.getenv("SECRET_KEY")
+        new_payload = {
+            "email": new_email,
+            "username": new_username,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        }
+
+        new_token = jwt.encode(new_payload, SECRET_KEY, algorithm="HS256")
+
+        response = redirect(url_for('profile'))
+        response.set_cookie('token', new_token, httponly=True)
+
+        return response
+
+    return render_template("profile.html", user=g.current_user)
 
 @app.route("/auth/signout")
 @login_required
@@ -207,6 +240,7 @@ def auth_login():
     
     payload = {
         "email": email,
+        "username": user[1],
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
     }
 
@@ -317,7 +351,7 @@ def create_newMessage():
         except (TypeError, ValueError):
             return jsonify({"success": False, "error": "Tamanho RSA invalido"}), 400
 
-        public_key, private_key = pk_user(utilizador_id, rsa_bits, rsa_key_type, db)
+        public_key, private_key = pk_user(utilizador_id, rsa_bits, db)
         if not public_key:
             return jsonify({"success": False, "error": "Erro ao obter chave pública"}), 500
         
@@ -327,6 +361,8 @@ def create_newMessage():
             private_key_data = private_key.decode("utf-8")
         
         cryptogram = encrypt_message_rsa(message, public_key)
+    elif method == "password":
+        return jsonify({"success": False, "error": "Password encryption not yet implemented"}), 501
     
     elif method == "random-key":
         return jsonify({"success": False, "error": "Random key encryption not yet implemented"}), 501
@@ -351,9 +387,6 @@ def create_newMessage():
         "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id)
     )
-
-    cofre_id = cursor.lastrowid
-    
     db.commit()
 
     return jsonify({
@@ -361,8 +394,7 @@ def create_newMessage():
         "message": "Mensagem guardada com sucesso!",
         "mensagem_id": mensagem_id,
         "private_key": private_key_data,
-        "private_key_message": private_key_message,
-        "vault_id": cofre_id
+        "private_key_message": private_key_message
     }), 201
 
 @app.route("/message/decrypt", methods=["POST"])
@@ -414,18 +446,14 @@ def decrypt_message_route():
     if resultado:
         method, mensagem_id, hmacAuth, signDig, hmacHash, sigHash = resultado
 
-        row_mensagem = cursor.execute("""
-            SELECT m.conteudoCifrado, m.titulo
+        conteudo_cifrado = cursor.execute("""
+            SELECT m.conteudoCifrado
             FROM mensagem m
             WHERE m.id = ?
         """, (mensagem_id,)).fetchone()
 
-    if row_mensagem:
-        conteudo_cifrado = row_mensagem[0]
-        titulo = row_mensagem[1]
-    else:
-        return render_template('open_vault.html', error="Message not found!")
-
+    if conteudo_cifrado:
+        conteudo_cifrado = conteudo_cifrado[0]
 
     #verificar o hmac do criptograma, de forma a saber se o mesmo sofreu altereações
     #recalculamos o hmac a partir do criptograma
@@ -459,6 +487,5 @@ def decrypt_message_route():
         vault_id=cofre_id,
         hmac_ok=hmacVer,
         sig_ok=sigVer,
-        title=titulo,
         message=mensagem   
     )

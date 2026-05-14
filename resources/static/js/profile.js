@@ -1,18 +1,20 @@
 const editBtn = document.getElementById('edit-toggle-btn');
 const saveActions = document.getElementById('save-actions');
 const form = document.getElementById('profile-form');
-const inputs = form.querySelectorAll('.input-field, #file-upload');
+
+const realInputs = form.querySelectorAll('#uname , #email')
+const jokeFields = form.querySelectorAll('#fname , #lname , #story');
 const imageWrapper = document.getElementById('image-wrapper');
-const fileInput = document.getElementById('file-upload');
+//const fileInput = document.getElementById('file-upload');
 
 // Toggle Edit Mode
 editBtn.addEventListener('click', () => {
     const isEditing = editBtn.classList.contains('editing');
 
     if (!isEditing) {
-        // Switch to Edit Mode
-        inputs.forEach(input => input.disabled = false);
-        imageWrapper.classList.remove('is-locked');
+        // Switch to Edit Mode: ONLY FOR EMAIL AND USERNAME
+        realInputs.forEach(input => input.disabled = false);
+
         saveActions.style.display = 'flex';
         editBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> Exit Editing';
         editBtn.classList.add('editing');
@@ -24,11 +26,23 @@ editBtn.addEventListener('click', () => {
 
 // Allow image click ONLY if not locked
 imageWrapper.addEventListener('click', () => {
-    if (!imageWrapper.classList.contains('is-locked')) {
-        fileInput.click();
+    const isEditing = editBtn.classList.contains('editing');
+    if (isEditing){
+        mostrarNotificacao("You can't change your appearance, Anakin", 'error');
     }
 });
 
+
+jokeFields.forEach(field => {
+    field.parentElement.addEventListener('click', () => {
+        const isEditing = editBtn.classList.contains('editing');
+        if (isEditing && field.disabled) {
+            mostrarNotificacao("The Jedi Biometric Security forbids this action.", 'error');
+        }
+    })
+}
+
+)
 // Image Preview Function
 function previewImage(event) {
     const reader = new FileReader();
