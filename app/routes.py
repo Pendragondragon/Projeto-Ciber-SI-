@@ -302,13 +302,40 @@ def create_newMessage():
     # converter assinatura para base64 para armazenar como texto
     assinatura_b64 = base64.b64encode(assDgtl).decode()
 
-    # por agora sem cifrar
-    cryptogram = message
+    cryptogram = None
+    private_key_data = None
+    private_key_message = None
 
-    # hmac do criptograma (HMAC_authentication espera bytes)
-    hmac_auth = HMAC_authentication(hmac_hash, cryptogram.encode())
+    if method == "rsa":
+        try:
+            rsa_bits = int(rsa_bits)
+        except (TypeError, ValueError):
+            return jsonify({"success": False, "error": "Tamanho RSA invalido"}), 400
 
-    # inserir mensagem
+        public_key, private_key = pk_user(utilizador_id, rsa_bits, db)
+        if not public_key:
+            return jsonify({"success": False, "error": "Erro ao obter chave pública"}), 500
+        
+        if private_key is None:
+            private_key_message = "Espero que nao tenha perdido a sua chave privada.😉"
+        else:
+            private_key_data = private_key.decode("utf-8")
+        
+        cryptogram = encrypt_message(message, public_key)
+    elif method == "password":
+        return jsonify({"success": False, "error": "Password encryption not yet implemented"}), 501
+    
+    elif method == "random-key":
+        return jsonify({"success": False, "error": "Random key encryption not yet implemented"}), 501
+    
+    else:
+        return jsonify({"success": False, "error": "Invalid encryption method"}), 400
+
+    if cryptogram is None:
+        return jsonify({"success": False, "error": "Failed to encrypt message"}), 500
+
+    hmac_auth = HMAC_authentication(hmac_hash, cryptogram.encode() if isinstance(cryptogram, str) else cryptogram)
+
     cursor.execute(
         "INSERT INTO mensagem (titulo, conteudoCifrado) VALUES (?, ?)",
         (title, cryptogram)
@@ -317,11 +344,16 @@ def create_newMessage():
 
     mensagem_id = cursor.lastrowid
 
-    # inserir cofre (usar colunas existentes em app/database.py)
     cursor.execute(
         "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id)
     )
     db.commit()
 
-    return jsonify({"success": True, "message": "Mensagem guardada com sucesso!", "mensagem_id": mensagem_id}), 201
+    return jsonify({
+        "success": True,
+        "message": "Mensagem guardada com sucesso!",
+        "mensagem_id": mensagem_id,
+        "private_key": private_key_data,
+        "private_key_message": private_key_message
+    }), 201
