@@ -231,7 +231,7 @@ def generate_keys(bits: int) -> tuple[bytes, bytes]:
     return public_key.save_pkcs1("PEM"), private_key.save_pkcs1("PEM")
 
 
-def encrypt_message(message, public_key: bytes) -> bytes:
+def encrypt_message_rsa(message, public_key: bytes) -> bytes:
     
     pk = rsa.PublicKey.load_pkcs1(public_key)
     encrypted_message = rsa.encrypt(message.encode(), pk)
@@ -239,7 +239,7 @@ def encrypt_message(message, public_key: bytes) -> bytes:
     return encrypted_message
 
 
-def decrypt_message(encrypted_message: bytes, private_key: bytes) -> str:
+def decrypt_message_rsa(encrypted_message: bytes, private_key: bytes) -> str:
 
     sk = rsa.PrivateKey.load_pkcs1(private_key)
     decrypted_message = rsa.decrypt(encrypted_message, sk).decode()
