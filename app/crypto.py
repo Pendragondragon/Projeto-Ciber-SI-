@@ -240,21 +240,32 @@ def encrypt_message_rsa(message, public_key: bytes) -> bytes:
     return encrypted_message
 
 
-def decrypt_message_rsa(encrypted_message: bytes, private_key: bytes) -> str:
-    #garantir que a mensagem esta no formato certo, em bytes
-    if isinstance(private_key, str):
-        private_key = private_key.encode('utf-8')
-
-    if isinstance(encrypted_message, str):
+def decrypt_message_rsa(encrypted_message, private_key):
+    try:
+        if isinstance(private_key, str):
+            private_key = private_key.strip().encode('utf-8')
+        
         try:
-            encrypted_message = base64.b64decode(encrypted_message)
-        except:
-            encrypted_message = encrypted_message.encode('utf-8')
+            sk = rsa.PrivateKey.load_pkcs1(private_key)
+        except ValueError:
+            return "The key is not in the right format (BEGIN RSA PRIVATE KEY)"
+        except Exception as e:
+            return f"Error reading the key: {str(e)}"
 
-    sk = rsa.PrivateKey.load_pkcs1(private_key)
-    decrypted_message = rsa.decrypt(encrypted_message, sk).decode()
+        try:
+            if isinstance(encrypted_message, str):
+                encrypted_message = base64.b64decode(encrypted_message)
+            
+            decrypted = rsa.decrypt(encrypted_message, sk)
+            return decrypted.decode('utf-8')
+            
+        except rsa.pkcs1.DecryptionError:
+            return "The key doesn't belong to this message"
+        except Exception as e:
+            return f"Decryption error: {str(e)}"
 
-    return decrypted_message
+    except Exception as e:
+        return f"Critical error: {str(e)}"
 
 def pk_user(user_id: int, bits, db=None) -> tuple[bytes, bytes]:
     # Use provided db connection or create a new one for thread safety
