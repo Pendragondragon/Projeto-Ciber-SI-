@@ -73,31 +73,29 @@
                             <div class="mt-6 space-y-10">
                                 <div id="whichKeyDiv">
                                     <fieldset>
-                                        <legend class="text-sm/6 font-semibold text-white">Queres usar uma chave publica
-                                            nova?</legend>
+                                        <legend class="text-sm/6 font-semibold text-white">Do you want to use a new public key?</legend>
                                         <div class="mt-6 space-y-6">
                                             <div class="flex items-center gap-x-3">
                                                 <input id="yes_nova" value="yes_nova" type="radio" name="rsa_key_type"
                                                     required
                                                     class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ... " />
                                                 <label for="yes_nova"
-                                                    class="block text-sm/6 font-medium text-white">Sim.</label>
+                                                    class="block text-sm/6 font-medium text-white">Yes.</label>
                                             </div>
                                             <div class="flex -items-center gap-x-3">
                                                 <input id="no_antiga" value="no_antiga" type="radio" name="rsa_key_type"
                                                     required
                                                     class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ... " />
                                                 <label for="no_antiga"
-                                                    class="block text-sm/6 font-medium text-white">Não. (Quero usar a
-                                                    chave publica que foi gerada automaticamente no registo.)</label>
+                                                    class="block text-sm/6 font-medium text-white">No. (I want to use the
+                                                    public key that was generated automatically on registration.)</label>
                                             </div>
                                         </div>
                                     </fieldset>
                                 </div>
 
                                 <div id="algSimDiv" class="col-span-full">
-                                    <label for="algSim_bits" class="block text-sm/6 font-medium text-white">Algoritmo de
-                                        Cifra Simétrica</label>
+                                    <label for="algSim_bits" class="block text-sm/6 font-medium text-white">Symmetric Encryption Algorithm</label>
                                     <div class="mt-2 grid grid-cols-1">
                                         <select id="algSim_bits" name="algSim_bits" autocomplete="algSim_bits-name"
                                             class="col-start-1 row-start-1 w-full appearance-none rounded-md bg-white/5 py-1.5 pr-8 pl-3 text-base text-white outline-1 -outline-offset-1 outline-white/10 *:bg-gray-800 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
@@ -116,23 +114,22 @@
                                 </div>
                                 <div id="chosenRandDiv">
                                     <fieldset>
-                                        <legend class="text-sm/6 font-semibold text-white">Queres usar uma chave
-                                            aleatória?</legend>
+                                        <legend class="text-sm/6 font-semibold text-white">Do you want to use a random key?</legend>
                                         <div class="mt-6 space-y-6">
                                             <div class="flex items-center gap-x-3">
                                                 <input id="passRand" value="passRand" type="radio"
                                                     name="symmetric_key_source" required
                                                     class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ... " />
                                                 <label for="passRand"
-                                                    class="block text-sm/6 font-medium text-white">Sim.</label>
+                                                    class="block text-sm/6 font-medium text-white">Yes.</label>
                                             </div>
                                             <div class="flex -items-center gap-x-3">
                                                 <input id="passChosen" value="passChosen" type="radio"
                                                     name="symmetric_key_source" required
                                                     class="relative size-4 appearance-none rounded-full border border-white/10 bg-white/5 before:absolute before:inset-1 before:rounded-full before:bg-white not-checked:before:hidden checked:border-indigo-500 checked:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ... " />
                                                 <label for="passChosen"
-                                                    class="block text-sm/6 font-medium text-white">Não. (Quero usar uma
-                                                    password escolhida por mim.)</label>
+                                                    class="block text-sm/6 font-medium text-white">No. (I want to use a
+                                                    password chosen by me.)</label>
                                             </div>
                                         </div>
                                     </fieldset>

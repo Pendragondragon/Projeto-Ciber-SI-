@@ -1,7 +1,7 @@
 {% extends "navbar.html" %}
 
 {% block content %}
-    <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8 py-8">
     <form method="POST" action="/message/decrypt">
@@ -29,14 +29,38 @@
                     </div>
 
                     <div class="col-span-full">
-                        <label for="secret" class="block text-sm font-medium text-white">Secret to open the vault</label>
+                        <label for="secret" class="block text-sm font-medium text-white">Secret to open the
+                            vault</label>
                         <div class="mt-2">
-                            <textarea id="secret" name="secret" rows="6" placeholder="Paste the Base64 key, password, or full RSA PEM private key here"
+                            <textarea id="secret" name="secret" rows="6"
+                                placeholder="Paste the Base64 key, password, or full RSA PEM private key here"
                                 class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"></textarea>
                         </div>
-                        
+
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-white mb-2">
+                                Upload Secret File
+                            </label>
+
+                            <label for="secret_file"
+                                class="cursor-pointer inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 transition-colors">
+                                Choose File
+                            </label>
+
+                            <input type="file" id="secret_file" accept=".txt,.pem,.key" class="hidden" />
+
+                            <p id="file_name" class="mt-2 text-sm text-indigo-400 hidden"></p>
+
+                            <p class="mt-2 text-xs text-gray-500">
+                                Supported formats: .txt, .pem, .key
+                            </p>
+                        </div>
+
+
                         <div class="mt-4 rounded-lg bg-indigo-500/5 p-4 border border-indigo-500/20">
-                            <h3 class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Expected formats:</h3>
+                            <h3 class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Expected formats:
+                            </h3>
                             <ul class="mt-2 list-disc list-inside text-sm text-gray-400 space-y-1">
                                 <li><span class="text-gray-300">Symmetric Mode:</span> AES key in Base64</li>
                                 <li><span class="text-gray-300">Password Mode:</span> Original password</li>
@@ -49,7 +73,8 @@
         </div>
 
         <div class="mt-6 flex items-center justify-end gap-x-6">
-            <a href="{{ url_for('open_vault') }}" class="text-sm font-semibold text-white hover:text-gray-300">Cancel</a>
+            <a href="{{ url_for('open_vault') }}"
+                class="text-sm font-semibold text-white hover:text-gray-300">Cancel</a>
             <button id="open_result" type="submit"
                 class="rounded-md bg-indigo-500 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 transition-colors">
                 Open Vault
@@ -57,4 +82,26 @@
         </div>
     </form>
 </div>
+<script>
+    document.getElementById('secret_file').addEventListener('change', function (event) {
+
+        const file = event.target.files[0];
+
+        if (!file) {
+            return;
+        }
+
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            document.getElementById('secret').value = e.target.result;
+        };
+
+        reader.onerror = function () {
+            alert('Error reading file.');
+        };
+
+        reader.readAsText(file);
+    });
+</script>
 {% endblock %}
