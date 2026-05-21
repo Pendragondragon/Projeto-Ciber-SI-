@@ -107,7 +107,7 @@
         >
           ✏️ Edit Vault
         </a>
-        <a
+        <button onclick="deleteVault()" 
           href="{{ url_for('delete_vault', vault_id=vault_id) }}"
           style="
             flex: 1;
@@ -127,12 +127,30 @@
           "
         >
           🗑️ Delete Vault
-        </a>
+        <button/>
       </div>
 
       <a href="{{ url_for('index') }}" class="btn"> Return to Console </a>
     </section>
   </div>
 </div>
+<script>
+async function deleteVault(){
 
+    const response = await fetch("/vault/request-delete", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            vault_id: 1,
+            email: "user@email.com"
+        })
+    });
+
+    const data = await response.json();
+
+    alert(data.message);
+}
+</script>
 {% endblock %}
