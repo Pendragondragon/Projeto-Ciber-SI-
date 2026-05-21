@@ -12,6 +12,7 @@ class Cofre:
         rsa_tamanho: RSATamanho,
         mensagem,
         metadado,
+        pkRsa=None,
         delete_token=None,
         delete_token_expira=None
     ):
@@ -22,7 +23,7 @@ class Cofre:
         self.hmac_hash = hmac_hash
         self.assinatura_hash = assinatura_hash
         self.rsa_tamanho = rsa_tamanho
-
+        self.pkRsa = pkRsa 
 
         self.delete_token = delete_token
         self.delete_token_expira = delete_token_expira

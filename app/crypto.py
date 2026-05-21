@@ -289,7 +289,6 @@ def pk_user(user_id: int, bits, oldOrNewKey, db=None) -> tuple[bytes, bytes]:
             return row[0], None
         
         public_key, private_key = generate_keys(bits)
-
             #if exists:
             #   local_cursor.execute(
             #        "UPDATE rsaKey SET pkRsa = ? WHERE utilizador_id = ?",
@@ -300,7 +299,7 @@ def pk_user(user_id: int, bits, oldOrNewKey, db=None) -> tuple[bytes, bytes]:
             #        "INSERT INTO rsaKey (utilizador_id, pkRsa) VALUES (?, ?)",
             #        (user_id, public_key)
             #    )
-            
+    
         if not exists:
             local_cursor.execute(
                 "INSERT INTO rsaKey (utilizador_id, pkRsa) VALUES (?, ?)",
