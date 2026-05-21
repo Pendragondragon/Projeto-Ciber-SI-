@@ -133,10 +133,10 @@ def deposit():
 def open_vault():
     return render_template("open_vault.html")
 
-@app.route("/open_result")
-@login_required
-def open_result():
-    return render_template("open_result.html")
+# @app.route("/open_result")
+# @login_required
+# def open_result():
+#     return render_template("open_result.html")
 
 @app.route("/profile", methods=["GET", "POST"])
 @login_required
@@ -209,7 +209,29 @@ def registerUser():
     """, (username, email, pw_hash))
     db.commit()
 
-    return jsonify({"success": True, "message": "Utilizador registado com sucesso!"}), 201
+    # obter id do utilizador recém-criado
+    utilizador_id = cursor.lastrowid
+
+    # gerar chaves RSA para o utilizador (armazenamos apenas a pública; devolvemos a privada ao utilizador)
+    private_key_data = None
+    private_key_message = None
+    try:
+        public_key, private_key = pk_user(utilizador_id, 2048, "no_antiga", db)
+        if private_key is not None:
+            private_key_data = private_key.decode("utf-8")
+            private_key_message = "Guarde a sua chave privada num local seguro. O servidor não a guarda."
+    except Exception as e:
+        # falha na geração de chaves — não impede o registo, apenas não devolve a chave
+        private_key_data = None
+        private_key_message = "Erro ao gerar chave privada no servidor."
+
+    return jsonify({
+        "success": True,
+        "message": "Utilizador registado com sucesso!",
+        "private_key": private_key_data,
+        "private_key_message": private_key_message,
+        "user_id": utilizador_id
+    }), 201
 
 @app.route("/auth/login", methods=["POST"])
 def auth_login():
