@@ -32,11 +32,8 @@ cursor.execute("""
         sigHash TEXT,
         utilizador_id INTEGER,
         mensagem_id INTEGER,
-<<<<<<< HEAD
         delete_token TEXT,
         delete_token_expira TEXT,
-=======
->>>>>>> origin/master
         FOREIGN KEY (utilizador_id) REFERENCES user(id),
         FOREIGN KEY (mensagem_id) REFERENCES mensagem(id)
     )
