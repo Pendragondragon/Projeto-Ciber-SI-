@@ -11,7 +11,9 @@ class Cofre:
         assinatura_hash: AssinaturaHash,
         rsa_tamanho: RSATamanho,
         mensagem,
-        metadado
+        metadado,
+        delete_token=None,
+        delete_token_expira=None,
     ):
         self.id = id
         self.codigo_autenticacao = codigo_autenticacao
@@ -20,6 +22,9 @@ class Cofre:
         self.hmac_hash = hmac_hash
         self.assinatura_hash = assinatura_hash
         self.rsa_tamanho = rsa_tamanho
+
+        self.delete_token = delete_token
+        self.delete_token_expira = delete_token_expira
 
         self.utilizadores = []
         self.mensagem = mensagem

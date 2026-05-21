@@ -1,8 +1,8 @@
 from main import app, get_db
-from flask import render_template, request, jsonify, redirect, url_for
+from flask import g, render_template, request, jsonify, redirect, url_for
 from flask_bcrypt import Bcrypt
 from services.auth_service import gerar_token_recuperacao, validar_token
-from services.email_service import enviar_email_recuperacao
+from services.email_service import enviar_email_apagar_cofre, enviar_email_recuperacao
 import os
 from dotenv import load_dotenv
 import jwt
@@ -16,35 +16,44 @@ bcrypt = Bcrypt(app)
 
 load_dotenv()
 
+
 # Decorador para proteger rotas que requerem autenticação
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        token = request.cookies.get('token')
+        token = request.cookies.get("token")
         SECRET_KEY = os.getenv("SECRET_KEY")
-        
+
         if not token or not SECRET_KEY:
             return render_template("login.html")
-        
+
         try:
-            jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+
+            g.current_user = decoded_token
+
         except jwt.InvalidTokenError:
             return render_template("login.html")
-        
+
         return f(*args, **kwargs)
+
     return decorated_function
+
 
 @app.route("/login")
 def login():
     return render_template("login.html")
 
+
 @app.route("/forgot-password")
 def forgot_password():
     return render_template("recuperar_password/forgot_password.html")
 
+
 @app.route("/reset-password")
 def reset_password_page():
     return render_template("recuperar_password/reset_password.html")
+
 
 @app.route("/auth/request-reset", methods=["POST"])
 def request_reset():
@@ -60,21 +69,26 @@ def request_reset():
         return jsonify({"success": False, "error": "Email não encontrado"}), 404
 
     from model.User import User
+
     user_obj = User(user[0], user[1], user[2], user[3])
 
     token = gerar_token_recuperacao(user_obj)
 
     # guardar token na BD
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE user
         SET reset_token = ?, reset_token_expira = ?
         WHERE email = ?
-    """, (user_obj.reset_token, user_obj.reset_token_expira, email))
+    """,
+        (user_obj.reset_token, user_obj.reset_token_expira, email),
+    )
     db.commit()
 
     enviar_email_recuperacao(user_obj, token)
 
     return jsonify({"success": True, "message": "Email enviado!"})
+
 
 @app.route("/auth/reset-password", methods=["POST"])
 def reset_password_route():
@@ -85,12 +99,15 @@ def reset_password_route():
     db = get_db()
     cursor = db.cursor()
 
-    user = cursor.execute("SELECT * FROM user WHERE reset_token = ?", (token,)).fetchone()
+    user = cursor.execute(
+        "SELECT * FROM user WHERE reset_token = ?", (token,)
+    ).fetchone()
 
     if not user:
         return jsonify({"success": False, "error": "Token inválido"}), 400
 
     from model.User import User
+
     user_obj = User(user[0], user[1], user[2], user[3])
     user_obj.reset_token = user[4]
     # Converter string da BD para objeto datetime
@@ -102,52 +119,94 @@ def reset_password_route():
     # hash da nova password
     pw_hash = bcrypt.generate_password_hash(nova_password, 10)
 
-    cursor.execute("""
+    cursor.execute(
+        """
         UPDATE user
         SET password = ?, reset_token = NULL, reset_token_expira = NULL
         WHERE email = ?
-    """, (pw_hash, user_obj.email))
+    """,
+        (pw_hash, user_obj.email),
+    )
     db.commit()
 
     return jsonify({"success": True, "message": "Password atualizada!"})
 
+
 @app.route("/register", methods=["GET"])
 def register():
     return render_template("signup.html")
+
 
 @app.route("/index")
 @login_required
 def index():
     return render_template("base.html")
 
+
 @app.route("/deposit")
 @login_required
 def deposit():
     return render_template("new_message.html")
+
 
 @app.route("/open_vault")
 @login_required
 def open_vault():
     return render_template("open_vault.html")
 
+
 @app.route("/open_result")
 @login_required
 def open_result():
     return render_template("open_result.html")
 
-@app.route("/profile")
+
+@app.route("/profile", methods=["GET", "POST"])
 @login_required
 def profile():
-    return render_template("profile.html")
+    if request.method == "POST":
+        new_username = request.form.get("uname")
+        new_email = request.form.get("email")
+
+        old_email = g.current_user["email"]
+
+        db = get_db()
+        cursor = db.cursor()
+
+        # Update user row on db
+        cursor.execute(
+            "UPDATE user SET username = ?, email = ? WHERE email = ?",
+            (new_username, new_email, old_email),
+        )
+        db.commit()
+
+        SECRET_KEY = os.getenv("SECRET_KEY")
+        new_payload = {
+            "email": new_email,
+            "username": new_username,
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2),
+        }
+
+        # new token to update info on profile
+        new_token = jwt.encode(new_payload, SECRET_KEY, algorithm="HS256")
+
+        response = redirect(url_for("profile"))
+        response.set_cookie("token", new_token, httponly=True)
+
+        return response
+
+    return render_template("profile.html", user=g.current_user)
+
 
 @app.route("/auth/signout")
 @login_required
 def signout():
-    response = redirect(url_for('login'))
+    response = redirect(url_for("login"))
 
-    response.delete_cookie('token')
+    response.delete_cookie("token")
 
     return response
+
 
 @app.route("/auth/registerUser", methods=["POST"])
 def registerUser():
@@ -166,26 +225,33 @@ def registerUser():
     if user:
         return jsonify({"success": False, "error": "Email já registado"}), 409
 
-    #password hashing 10-number of rounds for salt
+    # password hashing 10-number of rounds for salt
     pw_hash = bcrypt.generate_password_hash(password, 10)
 
-    cursor.execute("""
+    cursor.execute(
+        """
         INSERT INTO user (username, email, password)
         VALUES (?, ?, ?)
-    """, (username, email, pw_hash))
+    """,
+        (username, email, pw_hash),
+    )
     db.commit()
 
-    return jsonify({"success": True, "message": "Utilizador registado com sucesso!"}), 201
+    return (
+        jsonify({"success": True, "message": "Utilizador registado com sucesso!"}),
+        201,
+    )
+
 
 @app.route("/auth/login", methods=["POST"])
 def auth_login():
     data = request.get_json()
     email = data.get("email")
     password = data.get("password")
-    
+
     if not email or not password:
         return jsonify({"success": False, "error": "Missing email or password"}), 400
-    
+
     db = get_db()
     cursor = db.cursor()
 
@@ -199,30 +265,31 @@ def auth_login():
     if not bcrypt.check_password_hash(stored_hash, password):
         return jsonify({"success": False, "error": "Incorrect email or password"}), 401
 
-    
     SECRET_KEY = os.getenv("SECRET_KEY")
 
     if not SECRET_KEY:
         return jsonify({"success": False, "error": "Server configuration error"}), 500
-    
+
     payload = {
         "email": email,
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        "username": user[1],
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2),
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
     response = jsonify({"success": True, "message": "Login successful!"})
 
-    response.set_cookie('token', token, httponly=True)
+    response.set_cookie("token", token, httponly=True)
 
     return response, 200
-    
+
+
 @app.route("/", methods=["GET"])
 def check_jwt():
-    token = request.cookies.get('token')
+    token = request.cookies.get("token")
     SECRET_KEY = os.getenv("SECRET_KEY")
-    
+
     if not token or not SECRET_KEY:
         return render_template("home.html")
 
@@ -235,7 +302,7 @@ def check_jwt():
 
 @app.route("/auth/check", methods=["GET"])
 def auth_check():
-    token = request.cookies.get('token')
+    token = request.cookies.get("token")
     SECRET_KEY = os.getenv("SECRET_KEY")
 
     if not token or not SECRET_KEY:
@@ -247,6 +314,7 @@ def auth_check():
     except jwt.InvalidTokenError:
         return jsonify({"isLoggedIn": False})
 
+
 @app.after_request
 def add_header(response):
     # impede o browser de voltar a uma pagina quando o acesso expirar
@@ -255,7 +323,8 @@ def add_header(response):
     response.headers["Expires"] = "0"
     return response
 
-#criar cofre com mensagem        
+
+# criar cofre com mensagem
 @app.route("/message/deposit", methods=["POST"])
 @login_required
 def create_newMessage():
@@ -263,25 +332,28 @@ def create_newMessage():
     if not data:
         return jsonify({"success": False, "error": "Dados não recebidos"}), 400
 
-    title = data.get('title')
-    message = data.get('message')
-    method = data.get('method')
-    
-    alg_simetrico = data.get('algSim_bits')           
-    key_source = data.get('symmetric_key_source')     
-    password = data.get('password')                  
+    title = data.get("title")
+    message = data.get("message")
+    method = data.get("method")
 
-    rsa_bits = data.get('rsa_bits')                  
-    rsa_key_type = data.get('rsa_key_type')           
+    alg_simetrico = data.get("algSim_bits")
+    key_source = data.get("symmetric_key_source")
+    password = data.get("password")
 
-    hmac_hash = data.get('hmac_hash')   
-    sig_hash = data.get('sig_hash')
+    rsa_bits = data.get("rsa_bits")
+    rsa_key_type = data.get("rsa_key_type")
+
+    hmac_hash = data.get("hmac_hash")
+    sig_hash = data.get("sig_hash")
 
     if not message:
-        return jsonify({"success": False, "error": "A mensagem nao pode estar vazia"}), 400
+        return (
+            jsonify({"success": False, "error": "A mensagem nao pode estar vazia"}),
+            400,
+        )
 
     # buscar o utilizador pelo token
-    token = request.cookies.get('token')
+    token = request.cookies.get("token")
     SECRET_KEY = os.getenv("SECRET_KEY")
     if not token or not SECRET_KEY:
         return jsonify({"success": False, "error": "Autenticação necessária"}), 401
@@ -319,29 +391,39 @@ def create_newMessage():
 
         public_key, private_key = pk_user(utilizador_id, rsa_bits, rsa_key_type, db)
         if not public_key:
-            return jsonify({"success": False, "error": "Erro ao obter chave pública"}), 500
-        
+            return (
+                jsonify({"success": False, "error": "Erro ao obter chave pública"}),
+                500,
+            )
+
         if private_key is None:
             private_key_message = "Espero que nao tenha perdido a sua chave privada.😉"
         else:
             private_key_data = private_key.decode("utf-8")
-        
+
         cryptogram = encrypt_message_rsa(message, public_key)
-    
+
     elif method == "random-key":
-        return jsonify({"success": False, "error": "Random key encryption not yet implemented"}), 501
-    
+        return (
+            jsonify(
+                {"success": False, "error": "Random key encryption not yet implemented"}
+            ),
+            501,
+        )
+
     else:
         return jsonify({"success": False, "error": "Invalid encryption method"}), 400
 
     if cryptogram is None:
         return jsonify({"success": False, "error": "Failed to encrypt message"}), 500
 
-    hmac_auth = HMAC_authentication(hmac_hash, cryptogram.encode() if isinstance(cryptogram, str) else cryptogram)
+    hmac_auth = HMAC_authentication(
+        hmac_hash, cryptogram.encode() if isinstance(cryptogram, str) else cryptogram
+    )
 
     cursor.execute(
         "INSERT INTO mensagem (titulo, conteudoCifrado) VALUES (?, ?)",
-        (title, cryptogram)
+        (title, cryptogram),
     )
     db.commit()
 
@@ -349,90 +431,111 @@ def create_newMessage():
 
     cursor.execute(
         "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id)
+        (
+            hmac_auth,
+            assinatura_b64,
+            method,
+            hmac_hash,
+            sig_hash,
+            utilizador_id,
+            mensagem_id,
+        ),
     )
 
     cofre_id = cursor.lastrowid
-    
+
     db.commit()
 
-    return jsonify({
-        "success": True,
-        "message": "Mensagem guardada com sucesso!",
-        "mensagem_id": mensagem_id,
-        "private_key": private_key_data,
-        "private_key_message": private_key_message,
-        "vault_id": cofre_id
-    }), 201
+    return (
+        jsonify(
+            {
+                "success": True,
+                "message": "Mensagem guardada com sucesso!",
+                "mensagem_id": mensagem_id,
+                "private_key": private_key_data,
+                "private_key_message": private_key_message,
+                "vault_id": cofre_id,
+            }
+        ),
+        201,
+    )
+
 
 @app.route("/message/decrypt", methods=["POST"])
 @login_required
 def decrypt_message_route():
-    #ir buscar a informação inicial
-    cofre_id = request.form.get('vault_id')
-    secret = request.form.get('secret')
+    # ir buscar a informação inicial
+    cofre_id = request.form.get("vault_id")
+    secret = request.form.get("secret")
 
-    #verificar se a info existe
+    # verificar se a info existe
     if not cofre_id or not secret:
-        return render_template('open_vault.html', error="Vault id and secret key are required!")
+        return render_template(
+            "open_vault.html", error="Vault id and secret key are required!"
+        )
 
-    #verificar se o utilizador está logged in e se é válido
-    #se não redirecionar para o login
-    token = request.cookies.get('token')
+    # verificar se o utilizador está logged in e se é válido
+    # se não redirecionar para o login
+    token = request.cookies.get("token")
     SECRET_KEY = os.getenv("SECRET_KEY")
     try:
         if not token or not SECRET_KEY:
             raise Exception("Session expired")
         decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
     except:
-        return redirect(url_for('login'))
-    
+        return redirect(url_for("login"))
+
     email = decoded.get("email")
 
-    #inicializar base de dados
+    # inicializar base de dados
     db = get_db()
     cursor = db.cursor()
 
-    #verificar utilizador na base de dados
+    # verificar utilizador na base de dados
     user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
     if not user:
-        return render_template('open_vault.html', error="Invalid user.")
-    
-    #ir buscar todos os dados necessários para a desencriptar
-    resultado = cursor.execute("""
+        return render_template("open_vault.html", error="Invalid user.")
+
+    # ir buscar todos os dados necessários para a desencriptar
+    resultado = cursor.execute(
+        """
         SELECT c.tipoDeCifra, c.mensagem_id, c.codigoDeAutenticacao, c.assinaturaDigital, 
                c.hmacHash, c.sigHash
         FROM cofre c
         WHERE c.id = ?
-    """, (cofre_id,)).fetchone()
+    """,
+        (cofre_id,),
+    ).fetchone()
 
     if not resultado:
-        return render_template('open_vault.html', error="Vault not found!")
-    
+        return render_template("open_vault.html", error="Vault not found!")
+
     mensagem = None
 
     if resultado:
         method, mensagem_id, hmacAuth, signDig, hmacHash, sigHash = resultado
 
-        row_mensagem = cursor.execute("""
+        row_mensagem = cursor.execute(
+            """
             SELECT m.conteudoCifrado, m.titulo
             FROM mensagem m
             WHERE m.id = ?
-        """, (mensagem_id,)).fetchone()
+        """,
+            (mensagem_id,),
+        ).fetchone()
 
     if row_mensagem:
         conteudo_cifrado = row_mensagem[0]
         titulo = row_mensagem[1]
     else:
-        return render_template('open_vault.html', error="Message not found!")
+        return render_template("open_vault.html", error="Message not found!")
 
-
-    #verificar o hmac do criptograma, de forma a saber se o mesmo sofreu altereações
-    #recalculamos o hmac a partir do criptograma
+    # verificar o hmac do criptograma, de forma a saber se o mesmo sofreu altereações
+    # recalculamos o hmac a partir do criptograma
     hmacNow = HMAC_authentication(hmacHash, conteudo_cifrado)
     hmacVer = False
 
-    #comparamos com o hmac guardado
+    # comparamos com o hmac guardado
     if hmacNow == hmacAuth:
         hmacVer = True
 
@@ -442,23 +545,204 @@ def decrypt_message_route():
         elif method == "random-key":
             # mensagem = decrypt_message_symmetric(secret, conteudo_cifrado)
             pass
-            
+
         if mensagem is None:
-            return render_template('open_vault.html', error="Método de cifra não suportado.")
+            return render_template(
+                "open_vault.html", error="Método de cifra não suportado."
+            )
 
     except Exception as e:
         print(e)
-        return render_template('open_vault.html', error="Falha na decifração. Verifique o segredo.")
+        return render_template(
+            "open_vault.html", error="Falha na decifração. Verifique o segredo."
+        )
 
-    #verificar a assinatura digital do texto limpo
+    # verificar a assinatura digital do texto limpo
     sig_bytes = base64.b64decode(signDig)
     sigVer = verify_signature(sig_bytes, mensagem, sigHash)
 
     return render_template(
-        'open_result.html',
+        "open_result.html",
         vault_id=cofre_id,
         hmac_ok=hmacVer,
         sig_ok=sigVer,
         title=titulo,
-        message=mensagem   
+        message=mensagem,
     )
+
+
+@app.route("/vault/request-delete", methods=["POST"])
+def request_delete_vault():
+
+    data = request.get_json()
+
+    vault_id = data.get("vault_id")
+    email = data.get("email")
+
+    if not vault_id or not email:
+        return jsonify({
+            "success": False,
+            "error": "Missing data"
+        }), 400
+
+    db = get_db()
+    cursor = db.cursor()
+
+    # procurar utilizador
+    user = cursor.execute(
+        """
+        SELECT * FROM user
+        WHERE email = ?
+        """,
+        (email,)
+    ).fetchone()
+
+    if not user:
+        return jsonify({
+            "success": False,
+            "error": "User not found"
+        }), 404
+
+    # verificar se o cofre pertence ao utilizador
+    vault = cursor.execute(
+        """
+        SELECT * FROM cofre
+        WHERE id = ? AND utilizador_id = ?
+        """,
+        (vault_id, user[0])
+    ).fetchone()
+
+    if not vault:
+        return jsonify({
+            "success": False,
+            "error": "Vault not found"
+        }), 404
+
+    from model.User import User
+
+    user_obj = User(
+        user[0],
+        user[1],
+        user[2],
+        user[3]
+    )
+
+    # gerar token
+    token = gerar_token_recuperacao(user_obj)
+
+    # guardar token no cofre
+    cursor.execute(
+        """
+        UPDATE cofre
+        SET delete_token = ?,
+            delete_token_expira = ?
+        WHERE id = ?
+        """,
+        (
+            token,
+            user_obj.reset_token_expira.isoformat(),
+            vault_id
+        )
+    )
+
+    db.commit()
+
+    # enviar email
+    enviar_email_apagar_cofre(
+        user_obj,
+        vault_id,
+        token
+    )
+
+    return jsonify({
+        "success": True,
+        "message": "Confirmation email sent"
+    })
+
+
+@app.route("/delete-vault-confirm")
+def delete_vault_confirm_page():
+    return render_template("vault/delete_confirm.html")
+
+
+@app.route("/vault/delete-confirm", methods=["POST"])
+def confirm_delete_vault():
+
+    data = request.get_json()
+
+    token = data.get("token")
+    vault_id = data.get("vault_id")
+
+    if not token or not vault_id:
+        return jsonify({
+            "success": False,
+            "error": "Missing token or vault id"
+        }), 400
+
+    db = get_db()
+    cursor = db.cursor()
+
+    # procurar cofre
+    vault = cursor.execute(
+        """
+        SELECT id,
+               delete_token,
+               delete_token_expira
+        FROM cofre
+        WHERE id = ?
+        """,
+        (vault_id,)
+    ).fetchone()
+
+    if not vault:
+        return jsonify({
+            "success": False,
+            "error": "Vault not found"
+        }), 404
+
+    vault_id_db, saved_token, expiration = vault
+
+    # validar token
+    if saved_token != token:
+        return jsonify({
+            "success": False,
+            "error": "Invalid token"
+        }), 400
+
+    if not expiration:
+        return jsonify({
+            "success": False,
+            "error": "Invalid token"
+        }), 400
+
+    # validar data
+    try:
+        expiration_date = datetime.fromisoformat(expiration)
+    except:
+        return jsonify({
+            "success": False,
+            "error": "Invalid token"
+        }), 400
+
+    # verificar expiração
+    if datetime.now() > expiration_date:
+        return jsonify({
+            "success": False,
+            "error": "Token expired"
+        }), 400
+
+    # apagar cofre
+    cursor.execute(
+        """
+        DELETE FROM cofre
+        WHERE id = ? AND delete_token = ?
+        """,
+        (vault_id, token)
+    )
+
+    db.commit()
+
+    return jsonify({
+        "success": True,
+        "message": "Vault deleted successfully"
+    })
