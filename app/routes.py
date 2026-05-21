@@ -497,3 +497,41 @@ def decrypt_message_route():
         title=titulo,
         message=mensagem   
     )
+
+@app.route("/vault/<int:vault_id>/edit")
+@login_required
+def edit_vault(vault_id):
+    return render_template(
+        "open_vault.html",
+        error="Vault editing is not implemented yet.",
+        vault_id=vault_id,
+    )
+
+
+@app.route("/vault/<int:vault_id>/delete")
+@login_required
+def delete_vault(vault_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    row = cursor.execute(
+        "SELECT mensagem_id FROM cofre WHERE id = ?",
+        (vault_id,),
+    ).fetchone()
+
+    if not row:
+        return render_template(
+            "open_result.html",
+            vault_id=vault_id,
+            hmac_ok=False,
+            sig_ok=False,
+            error="Vault not found!",
+        )
+
+    mensagem_id = row[0]
+
+    cursor.execute("DELETE FROM cofre WHERE id = ?", (vault_id,))
+    cursor.execute("DELETE FROM mensagem WHERE id = ?", (mensagem_id,))
+    db.commit()
+
+    return redirect(url_for("index"))
