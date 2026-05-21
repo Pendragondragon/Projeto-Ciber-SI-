@@ -72,7 +72,11 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
             actions.appendChild(copyButton);
             actions.appendChild(downloadButton);
             modal.appendChild(title);
+<<<<<<< HEAD
             modal.appendChild(idBadge); 
+=======
+            modal.appendChild(idBadge);
+>>>>>>> origin/master
             modal.appendChild(description);
             modal.appendChild(keyBox);
         } else {
@@ -157,13 +161,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //mostra so os que interessam
         if (selectedValue === "rsa") {
+<<<<<<< HEAD
             if (rsaDiv) rsaDiv.style.display = "block";
             if (rsaSelect) rsaSelect.setAttribute('required', '');
 
+=======
+>>>>>>> origin/master
             if (whichKeyDiv) whichKeyDiv.style.display = "block";
             if (yesKey) yesKey.setAttribute('required', '');
             if (noKey) noKey.setAttribute('required', '');
 
+<<<<<<< HEAD
+=======
+            // mostra o selector de tamanho RSA apenas se o utilizador pedir um novo par de chaves
+            if (yesKey && yesKey.checked) {
+                if (rsaDiv) rsaDiv.style.display = "block";
+                if (rsaSelect) rsaSelect.setAttribute('required', '');
+            } else {
+                if (rsaDiv) rsaDiv.style.display = "none";
+                if (rsaSelect) rsaSelect.removeAttribute('required');
+            }
+
+>>>>>>> origin/master
         } else if (selectedValue === "random-key") {
             if (algSimDiv) algSimDiv.style.display = "block";
             if (algSim_bits) algSim_bits.setAttribute('required', '');
@@ -251,6 +270,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     methodSelect.addEventListener("change", setMethodOptions);
     passRand.addEventListener('change', setMethodOptions);
     passChosen.addEventListener('change', setMethodOptions);
+<<<<<<< HEAD
+=======
+    if (yesKey) yesKey.addEventListener('change', setMethodOptions);
+    if (noKey) noKey.addEventListener('change', setMethodOptions);
+>>>>>>> origin/master
 
     //limite de chars a inserir
     rsaSelect.addEventListener('change', updateLimit);

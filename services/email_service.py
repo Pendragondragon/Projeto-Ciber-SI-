@@ -1,10 +1,15 @@
 from flask_mail import Message
 from main import mail
 
+<<<<<<< HEAD
 BASE_URL = "http://localhost:5000"
 
 def enviar_email_recuperacao(user, token):
     link = f"{BASE_URL}/reset-password?token={token}"
+=======
+def enviar_email_recuperacao(user, token):
+    link = f"http://localhost:5000/reset-password?token={token}"
+>>>>>>> origin/master
 
     msg = Message(
         subject="Recuperação de Password",
@@ -13,6 +18,7 @@ def enviar_email_recuperacao(user, token):
     )
 
     msg.body = f"""
+<<<<<<< HEAD
 Hello {user.username},
 
 Click the link below to reset your password:
@@ -45,6 +51,17 @@ Click the link below to confirm the deletion of your vault:
 This link expires in 15 minutes.
 
 If you did not request this action, ignore this email.
+=======
+Olá {user.username},
+
+Clique no link para redefinir a sua password:
+
+{link}
+
+Este link expira em 15 minutos.
+
+Se não fez este pedido, ignore este email.
+>>>>>>> origin/master
 """
 
     mail.send(msg)

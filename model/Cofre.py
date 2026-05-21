@@ -11,9 +11,13 @@ class Cofre:
         assinatura_hash: AssinaturaHash,
         rsa_tamanho: RSATamanho,
         mensagem,
+<<<<<<< HEAD
         metadado,
         delete_token=None,
         delete_token_expira=None,
+=======
+        metadado
+>>>>>>> origin/master
     ):
         self.id = id
         self.codigo_autenticacao = codigo_autenticacao
@@ -23,9 +27,12 @@ class Cofre:
         self.assinatura_hash = assinatura_hash
         self.rsa_tamanho = rsa_tamanho
 
+<<<<<<< HEAD
         self.delete_token = delete_token
         self.delete_token_expira = delete_token_expira
 
+=======
+>>>>>>> origin/master
         self.utilizadores = []
         self.mensagem = mensagem
         self.metadado = metadado
@@ -49,4 +56,8 @@ class Cofre:
             f"Cofre(id={self.id}, tipo_de_cifra={self.tipo_de_cifra.name}, "
             f"hmac={self.hmac_hash.name}, assinatura={self.assinatura_hash.name}, "
             f"rsa={self.rsa_tamanho.value}, utilizadores={len(self.utilizadores)})"
+<<<<<<< HEAD
         )
+=======
+        )
+>>>>>>> origin/master
