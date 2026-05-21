@@ -4,11 +4,8 @@ const url = "/auth";
 document.getElementById('registo-form').addEventListener('submit', function (event) {
     event.preventDefault(); // Prevent the default form submission
 
-<<<<<<< HEAD
-=======
     const spinner = document.getElementById('loadingSpinner');
 
->>>>>>> origin/master
     const username = document.getElementById('username').value;
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -25,13 +22,10 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
         return;
     }
 
-<<<<<<< HEAD
-=======
     if (spinner) {
         spinner.classList.remove('hidden');
     }
 
->>>>>>> origin/master
     // iniciar pedido de registo
     fetch(url + '/registerUser', {
         method: 'POST',
@@ -48,22 +42,12 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
         .then(data => {
             console.log("Data:", data);
             if (data.success) {
-<<<<<<< HEAD
-                mostrarNotificacao('Successful Sign In!', 'success');
-                setTimeout(() => {
-                    window.location.href = "/login";
-                }, 1500);
-            } else {
-                const mensagem = data.message || data.error || 'Invalid Values.';
-                mostrarNotificacao(mensagem, 'error');
-            }
-=======
                 if (spinner) {
                     spinner.classList.add('hidden');
                 }
                 // se a chave privada foi gerada pelo servidor, mostrar o modal estilo "new_message"
                 if (data.private_key) {
-                    mostrarNotificacao('Registo bem sucedido! Guarde a sua chave privada.', 'success');
+                    mostrarNotificacao('Successfully registered! Save your private key.', 'success');
                     // criar modal similar ao usado em new_message.js
                     (function showRsaPopup(privateKey, user_id, fallbackMessage) {
                         return new Promise((resolve) => {
@@ -75,7 +59,7 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
 
                             const title = document.createElement('h2');
                             title.className = 'mb-3 text-xl font-semibold';
-                            title.textContent = privateKey ? 'Guarde a sua chave privada' : 'Chave privada';
+                            title.textContent = privateKey ? 'Save your private key' : 'Priavte key';
 
                             const idBadge = document.createElement('div');
                             idBadge.className = 'mb-4 inline-block rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-1 text-xs font-mono font-bold tracking-wider text-indigo-400';
@@ -98,7 +82,7 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
                             });
 
                             if (privateKey) {
-                                description.textContent = fallbackMessage || 'Guarde esta chave privada num local seguro. Vai precisar dela para entrar na sua conta.';
+                                description.textContent = fallbackMessage || 'Save this key in a safe spot. You are going to need it to open your vault.';
 
                                 const keyBox = document.createElement('textarea');
                                 keyBox.className = 'h-56 w-full rounded-md bg-gray-900 p-3 text-xs text-green-200 outline-none';
@@ -108,20 +92,20 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
                                 const copyButton = document.createElement('button');
                                 copyButton.type = 'button';
                                 copyButton.className = 'rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500';
-                                copyButton.textContent = 'Copiar chave';
+                                copyButton.textContent = 'Copy key';
                                 copyButton.addEventListener('click', async () => {
                                     try {
                                         await navigator.clipboard.writeText(privateKey);
-                                        mostrarNotificacao('Chave privada copiada!', 'success');
+                                        mostrarNotificacao('Private key copied!', 'success');
                                     } catch (error) {
-                                        mostrarNotificacao('Nao foi possivel copiar a chave.', 'error');
+                                        mostrarNotificacao('It was not possible to copy the key.', 'error');
                                     }
                                 });
 
                                 const downloadButton = document.createElement('button');
                                 downloadButton.type = 'button';
                                 downloadButton.className = 'rounded-md bg-green-600 px-4 py-2 text-sm font-semibold hover:bg-green-500';
-                                downloadButton.textContent = 'Download chave';
+                                downloadButton.textContent = 'Download key';
                                 downloadButton.addEventListener('click', () => {
                                     const blob = new Blob([privateKey], { type: 'text/plain' });
                                     const url = URL.createObjectURL(blob);
@@ -132,7 +116,7 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
                                     a.click();
                                     document.body.removeChild(a);
                                     URL.revokeObjectURL(url);
-                                    mostrarNotificacao('Chave privada descarregada!', 'success');
+                                    mostrarNotificacao('Private key downloaded!', 'success');
                                 });
 
                                 actions.appendChild(copyButton);
@@ -142,7 +126,7 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
                                 modal.appendChild(description);
                                 modal.appendChild(keyBox);
                             } else {
-                                description.textContent = fallbackMessage || 'Espero que nao tenha perdido a sua chave privada.';
+                                description.textContent = fallbackMessage || 'I hope you have not lost your private key.';
                                 modal.appendChild(title);
                                 modal.appendChild(description);
                             }
@@ -171,7 +155,6 @@ document.getElementById('registo-form').addEventListener('submit', function (eve
             if (spinner) {
                 spinner.classList.add('hidden');
             }
-            mostrarNotificacao('Nao foi possivel concluir o registo.', 'error');
->>>>>>> origin/master
+            mostrarNotificacao('It was not possible to finalize the register.', 'error');
         });
 });
