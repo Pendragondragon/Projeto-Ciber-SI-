@@ -10,7 +10,7 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
 
         const title = document.createElement('h2');
         title.className = 'mb-3 text-xl font-semibold';
-        title.textContent = privateKey ? 'Guarde a sua chave privada' : 'Chave privada';
+        title.textContent = privateKey ? 'Keep your private key safe' : 'Private Key';
 
         const idBadge = document.createElement('div');
         idBadge.className = 'mb-4 inline-block rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-1 text-xs font-mono font-bold tracking-wider text-indigo-400';
@@ -25,14 +25,14 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
         const closeButton = document.createElement('button');
         closeButton.type = 'button';
         closeButton.className = 'rounded-md bg-gray-600 px-4 py-2 text-sm font-semibold hover:bg-gray-500';
-        closeButton.textContent = 'Fechar';
+        closeButton.textContent = 'Close';
         closeButton.addEventListener('click', () => {
             overlay.remove();
             resolve();
         });
 
         if (privateKey) {
-            description.textContent = 'Guarde esta chave privada num local seguro. Vai precisar dela para abrir o cofre.';
+            description.textContent = 'Keep this private key in a safe location. The key is required to open the vault.';
 
             const keyBox = document.createElement('textarea');
             keyBox.className = 'h-56 w-full rounded-md bg-gray-900 p-3 text-xs text-green-200 outline-none';
@@ -42,20 +42,20 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
             const copyButton = document.createElement('button');
             copyButton.type = 'button';
             copyButton.className = 'rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold hover:bg-indigo-500';
-            copyButton.textContent = 'Copiar chave';
+            copyButton.textContent = 'Copy key';
             copyButton.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(privateKey);
-                    mostrarNotificacao('Chave privada copiada!', 'success');
+                    mostrarNotificacao('Private key copied!', 'success');
                 } catch (error) {
-                    mostrarNotificacao('Nao foi possivel copiar a chave.', 'error');
+                    mostrarNotificacao('It was not possible to copy the key', 'error');
                 }
             });
 
             const downloadButton = document.createElement('button');
             downloadButton.type = 'button';
             downloadButton.className = 'rounded-md bg-green-600 px-4 py-2 text-sm font-semibold hover:bg-green-500';
-            downloadButton.textContent = 'Download chave';
+            downloadButton.textContent = 'Download key';
             downloadButton.addEventListener('click', () => {
                 const blob = new Blob([privateKey], { type: 'text/plain' });
                 const url = URL.createObjectURL(blob);
@@ -66,7 +66,7 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                mostrarNotificacao('Chave privada descarregada!', 'success');
+                mostrarNotificacao('Private key downloaded!', 'success');
             });
 
             actions.appendChild(copyButton);
@@ -80,7 +80,7 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
             modal.appendChild(description);
             modal.appendChild(keyBox);
         } else {
-            description.textContent = fallbackMessage || 'Espero que nao tenha perdido a sua chave privada.';
+            description.textContent = fallbackMessage || 'Hope you have not lost your private key.';
             modal.appendChild(title);
             modal.appendChild(description);
         }
