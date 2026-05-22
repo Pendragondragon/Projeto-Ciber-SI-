@@ -13,6 +13,10 @@ class Cofre:
         mensagem,
         metadado,
         pkRsa=None,
+        keySource=None,       
+        typeSim=None,
+        salt=None,
+        iv=None,
         delete_token=None,
         delete_token_expira=None
     ):
@@ -24,6 +28,10 @@ class Cofre:
         self.assinatura_hash = assinatura_hash
         self.rsa_tamanho = rsa_tamanho
         self.pkRsa = pkRsa 
+        self.keySource = keySource  
+        self.typeSim = typeSim
+        self.salt = salt
+        self.iv = iv
 
         self.delete_token = delete_token
         self.delete_token_expira = delete_token_expira
