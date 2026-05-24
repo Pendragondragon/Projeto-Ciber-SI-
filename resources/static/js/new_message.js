@@ -72,12 +72,13 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
             actions.appendChild(copyButton);
             actions.appendChild(downloadButton);
             modal.appendChild(title);
-            modal.appendChild(idBadge); 
+            modal.appendChild(idBadge);
             modal.appendChild(description);
             modal.appendChild(keyBox);
         } else {
             description.textContent = fallbackMessage || 'Hope you have not lost your private key.';
             modal.appendChild(title);
+            modal.appendChild(idBadge);
             modal.appendChild(description);
         }
 
@@ -235,13 +236,17 @@ document.addEventListener("DOMContentLoaded", async () => {
             .then(data => {
                 if (data.success) {
                     spinner.classList.add("hidden");
+                    const successMessage = data.vault_id
+                        ? `Vault created successfully! Vault id: #${data.vault_id}`
+                        : 'Vault created successfully!';
+
                     if (payload.method === 'rsa') {
                         showRsaPopup(data.private_key, data.vault_id, 'Vault created successfully!').then(() => {
                             window.location.href = "/deposit";
                         });
                     }
 
-                    mostrarNotificacao('Vault created successfully!', 'success');
+                    mostrarNotificacao(successMessage, 'success');
                 } else {
                     spinner.classList.add("hidden");
                     const mensagem = data.message || data.error || 'Invalid Values.';
