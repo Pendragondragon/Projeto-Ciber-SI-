@@ -367,6 +367,7 @@ def create_newMessage():
     cryptogram = None
     private_key_data = None
     private_key_message = None
+    salt = None
 
     if method == "rsa":
         try:
@@ -430,7 +431,7 @@ def create_newMessage():
     #guardar tambem o tipo de chave e qual o algoritmo simetrico
     elif method == 'random-key':
         cursor.execute(
-            "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash, utilizador_id, mensagem_id, keySource, typeSim, salt, iv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash, utilizador_id, mensagem_id, keySource, typeSim, salt, iv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id, key_source, type_sim, salt, iv)
         )
     else:
