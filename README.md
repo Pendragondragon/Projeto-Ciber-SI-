@@ -1,4 +1,5 @@
 # SAFE-DEPOSIT-BOX
+SAFE-DEPOSIT-BOX was developed as the pratical project for the Cybersecurity subject at Universidade da Beira Interior (UBI).<br>
 This project provides a web application where users can securely store messages in an encrypted state, being able to choose between several cypher modes. The system ensures confidentially, integrity, and authenticity by utilizing multiple cryptographic standards. Users can retrieve their messages later by providing cryptographic codes they generated earlier.
 
 ### Core Features
