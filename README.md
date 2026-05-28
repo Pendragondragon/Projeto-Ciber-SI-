@@ -11,13 +11,25 @@ This application has some core features that are important to mention since they
  * Asymmetric Encryption ([RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem))
 
 ####  Security and Integrity
- * ([HMAC-SHA256]([https://en.wikipedia.org/wiki/AES_implementations](https://en.wikipedia.org/wiki/HMAC)): Ensures message integrity for all stored cryptograms.
+ * [HMAC-SHA256](https://en.wikipedia.org/wiki/HMAC): Ensures message integrity for all stored cryptograms.
  *  Digital Signatures: All plaintext messages are signed before encryption to ensure authenticity.
 
 ####  Verification
  * Integrity and authenticity are checked automatically, whenever a vault is opened.
 
+### Advanced Features
+ * Algorithm Flexibility: Support for [AES-256-CBC](https://en.wikipedia.org/wiki/AES_implementations), [ChaCha20](https://wiki.tcl-lang.org/page/ChaCha20) and selectable hash functions such as [SHA256/SHA512](https://en.wikipedia.org/wiki/Secure_Hash_Algorithms)
+ * Customizable Parameters: Options to configurate [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem) key sizes and hash functions.
 
+### Technical Stack
+ * Encryption: [AES-256-CBC](https://en.wikipedia.org/wiki/AES_implementations), [RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem)
+ * Integrity/Signing: [HMAC-SHA256](https://en.wikipedia.org/wiki/HMAC), Digital Signatures.  
+ * Environment: Designed for local deployment and prototyping.
+
+### How It Works?
+ * Deposit: User inputs a message → System encrypts and signs → Keys/Credentials are provided to the user.
+ * Verify: The system stores an HMAC [HMAC-SHA256](https://en.wikipedia.org/wiki/HMAC) for every vault to detect tampering.
+ * Retrieve: User provides the key/password → System verifies integrity → Message is decrypted and displayed.
 ---
 
 ##  Technologies and Prerequisites
