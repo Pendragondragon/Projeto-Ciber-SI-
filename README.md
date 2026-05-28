@@ -12,6 +12,8 @@ This application has some core features that are important to mention since they
 ---
 
 ##  Technologies and Prerequisites
+
+####  Instalations
 Before starting this application, make sure of having the following tools installed:
   * cryptography
   * flask
@@ -31,6 +33,7 @@ Before starting this application, make sure of having the following tools instal
   * sqlite-utils
 
 
+####  Environment Creation
 To create an environment in [Visual Studio Code](https://code.visualstudio.com/) follow the following steps:
 ```bash
 $ python -m venv .venv
@@ -38,9 +41,11 @@ $ source "PATH/.venv/bin/activate"
 ```
 Then press ctrl + shift + P,<br>
 Later, select the option Python: Select Interpreter<br>
-Later, choose Python (.venv)
+Later, choose Python (.venv)<br>
 Once those steps are finished, you have an environment created to suport this project.
 
+
+####  Tools and Frameworks
 There were also used the following tools and frameworks:
  * [tailwind](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
