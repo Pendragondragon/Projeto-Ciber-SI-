@@ -25,9 +25,12 @@ Before starting this application, make sure of having the following tools instal
   * sqlite-utils
 
 
-Para criar environment
-python -m venv .venv
-source ""PATH/.venv/bin/activate"
+To create an environment
+```bash
+$ python -m venv .venv
+```
+
+source "PATH/.venv/bin/activate"
 ctrl + shift + P
 Python: Select Interpreter
 Python (.venv)
