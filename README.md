@@ -1,10 +1,10 @@
-# SAFE-DEEPOSIT-BOX
+# SAFE-DEPOSIT-BOX
 
 Este projeto consiste numa aplicação web para
 
 <br>
 
-#  Technologies and Prerequisites
+##  Technologies and Prerequisites
 Before starting this application, make sure of having the following tools installed:
 
   • cryptography
@@ -34,7 +34,7 @@ Python (.venv)
 
 
 <br>
-#  Credenciais de Teste Já Criadas
+## Credenciais de Teste Já Criadas
 
 <br>
-Iniciar a Aplicação
+## Iniciar a Aplicação
