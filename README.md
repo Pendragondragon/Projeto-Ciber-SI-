@@ -28,7 +28,7 @@ This application has some core features that are important to mention since they
 
 ### How It Works?
  * Deposit: User inputs a message → System encrypts and signs → Keys/Credentials are provided to the user.
- * Verify: The system stores an HMAC [HMAC-SHA256](https://en.wikipedia.org/wiki/HMAC) for every vault to detect tampering.
+ * Verify: The system stores an [HMAC-SHA256](https://en.wikipedia.org/wiki/HMAC) for every vault to detect tampering.
  * Retrieve: User provides the key/password → System verifies integrity → Message is decrypted and displayed.
 ---
 
