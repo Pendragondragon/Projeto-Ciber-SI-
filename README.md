@@ -2,7 +2,7 @@
 
 Este projeto consiste numa aplicação web para
 
-<br>
+---
 
 ##  Technologies and Prerequisites
 Before starting this application, make sure of having the following tools installed:
@@ -33,8 +33,8 @@ Python: Select Interpreter
 Python (.venv)
 
 
-<br>
+---
 ## Credenciais de Teste Já Criadas
 
-<br>
+---
 ## Iniciar a Aplicação
