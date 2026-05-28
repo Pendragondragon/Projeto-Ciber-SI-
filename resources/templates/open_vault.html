@@ -80,6 +80,13 @@
                 Open Vault
             </button>
         </div>
+
+              <div class="mt-6 flex items-center justify-start gap-x-6">
+            <button type="button" id="delete_vault" onclick="requestVaultDeletion()"
+                class="rounded-md bg-red-500 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-500 transition-colors">
+                Delete Vault
+            </button>
+        </div>
     </form>
 </div>
 <script>
@@ -103,5 +110,43 @@
 
         reader.readAsText(file);
     });
+
+      async function requestVaultDeletion() {
+
+        const vaultId = document.getElementById("vault_id").value;
+
+        if (!vaultId) {
+            alert("Please enter a vault id.");
+            return;
+        }
+
+        try {
+
+            const response = await fetch("/vault/request-delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    vault_id: vaultId
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+
+                alert("Confirmation email sent.");
+
+            } else {
+
+                alert(data.error);
+            }
+
+        } catch (error) {
+
+            alert("Something went wrong.");
+        }
+    }
 </script>
 {% endblock %}

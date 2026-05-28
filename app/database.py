@@ -3,6 +3,8 @@ import sqlite3
 connection = sqlite3.connect("database.db")
 cursor = connection.cursor()
 
+connection.execute("PRAGMA foreign_keys = ON;")
+
 cursor.execute("""
     CREATE TABLE IF NOT EXISTS user ( 
         id INTEGER PRIMARY KEY, 
@@ -39,8 +41,8 @@ cursor.execute("""
         iv BLOB,            
         delete_token TEXT,
         delete_token_expira TEXT,
-        FOREIGN KEY (utilizador_id) REFERENCES user(id),
-        FOREIGN KEY (mensagem_id) REFERENCES mensagem(id)
+        FOREIGN KEY (utilizador_id) REFERENCES user(id) ON DELETE CASCADE,
+        FOREIGN KEY (mensagem_id) REFERENCES mensagem(id) ON DELETE CASCADE
     )
 """)
 
@@ -49,8 +51,7 @@ cursor.execute("""
         id INTEGER PRIMARY KEY,
         utilizador_id INTEGER,
         pkRsa TEXT,
-        FOREIGN KEY (utilizador_id) REFERENCES user(id)
-    )
+        FOREIGN KEY (utilizador_id) REFERENCES user(id) ON DELETE CASCADE    )
 """)
 
 connection.commit()

@@ -18,6 +18,7 @@ Hello {user.username},
 
 Click the link below to reset your password:
 
+{link}
 
 This link expires in 15 minutes.
 
