@@ -9,6 +9,15 @@ This application has some core features that are important to mention since they
  * Symmetric Encryption ([AES-256-CBC](https://en.wikipedia.org/wiki/AES_implementations))
  * Password-based Derivation ([Secure KDF](https://en.wikipedia.org/wiki/Key_derivation_function))
  * Asymmetric Encryption ([RSA](https://en.wikipedia.org/wiki/RSA_cryptosystem))
+
+####  Security and Integrity
+ * ([HMAC-SHA256]([https://en.wikipedia.org/wiki/AES_implementations](https://en.wikipedia.org/wiki/HMAC)): Ensures message integrity for all stored cryptograms.
+ *  Digital Signatures: All plaintext messages are signed before encryption to ensure authenticity.
+
+####  Verification
+ * Integrity and authenticity are checked automatically, whenever a vault is opened.
+
+
 ---
 
 ##  Technologies and Prerequisites
@@ -56,63 +65,3 @@ There were created some credential when testing the developed web application
 
 ---
 ## Iniciating the Application
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Why are you gay
