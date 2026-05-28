@@ -69,6 +69,7 @@ Once those steps are finished, you have an environment created to suport this pr
 
 ####  Tools and Frameworks
 There were also used the following tools and frameworks:
+ * [flask](https://flask.palletsprojects.com/en/stable/)
  * [tailwind](https://tailwindcss.com/plus/ui-blocks/application-ui/forms/form-layouts)
 
 ---
