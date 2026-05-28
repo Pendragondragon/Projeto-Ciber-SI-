@@ -336,9 +336,13 @@ def create_newMessage():
     if not data:
         return jsonify({"success": False, "error": "Dados não recebidos"}), 400
 
-    title = data.get("title")
-    message = data.get("message")
-    method = data.get("method")
+    title = data.get('title')
+    message = data.get('message')
+    method = data.get('method')
+    
+    type_sim = data.get('algSim_bits')           
+    key_source = data.get('symmetric_key_source')     
+    password = data.get('password')                  
 
     alg_simetrico = data.get("algSim_bits")
     key_source = data.get("symmetric_key_source")
@@ -386,6 +390,7 @@ def create_newMessage():
     cryptogram = None
     private_key_data = None
     private_key_message = None
+    salt = None
 
     if method == "rsa":
         try:
@@ -406,15 +411,27 @@ def create_newMessage():
             private_key_data = private_key.decode("utf-8")
 
         cryptogram = encrypt_message_rsa(message, public_key)
-
     elif method == "random-key":
-        return (
-            jsonify(
-                {"success": False, "error": "Random key encryption not yet implemented"}
-            ),
-            501,
-        )
+        #verificar se tenho de criar uma chave nova ou usar a que o utilizador inseriu
+        if key_source == 'passChosen':
+            #udeixar o hmac verificar se a plaavra passe é a certa ou nao
+            salt, secretKey = deriveKey(password, None)
+            salt = base64.b64encode(salt).decode("utf-8")
+        else:
+            #gerar pass random
+            secretKey = random_bytes(32)
+            private_key_data = base64.b64encode(secretKey).decode("utf-8")
 
+        #verificar qual o algoritmo simetrico
+        if type_sim == 'AES-256-CBC':
+            cryptogram, iv = aes256_cbc_encrypt(message, secretKey, None)
+        elif type_sim == 'AES-256-CTR':
+            cryptogram, iv = aes256_ctr_encrypt(message, secretKey, None)
+        elif type_sim == 'ChaCha20':
+            cryptogram, iv = encrypt_chacha20(message, secretKey, None)
+        else:
+            return jsonify({"success": False, "error": "Type of symmetric algorithm not supported"}), 501
+    
     else:
         return jsonify({"success": False, "error": "Invalid encryption method"}), 400
 
@@ -433,18 +450,23 @@ def create_newMessage():
 
     mensagem_id = cursor.lastrowid
 
-    cursor.execute(
-        "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (
-            hmac_auth,
-            assinatura_b64,
-            method,
-            hmac_hash,
-            sig_hash,
-            utilizador_id,
-            mensagem_id,
-        ),
-    )
+    #só insere na base de dados a chave publica se for rsa, se for uma nova e se ela existir
+    if method == 'rsa' and rsa_key_type == 'yes_nova' and public_key:
+        cursor.execute(
+            "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash, utilizador_id, mensagem_id, pkRsa) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id, public_key)
+        )
+    #guardar tambem o tipo de chave e qual o algoritmo simetrico
+    elif method == 'random-key':
+        cursor.execute(
+            "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash, utilizador_id, mensagem_id, keySource, typeSim, salt, iv) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id, key_source, type_sim, salt, iv)
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO cofre (codigoDeAutenticacao, assinaturaDigital, tipoDeCifra, hmacHash, sigHash,utilizador_id, mensagem_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, utilizador_id, mensagem_id)
+        )
 
     cofre_id = cursor.lastrowid
 
@@ -504,7 +526,7 @@ def decrypt_message_route():
     resultado = cursor.execute(
         """
         SELECT c.tipoDeCifra, c.mensagem_id, c.codigoDeAutenticacao, c.assinaturaDigital, 
-               c.hmacHash, c.sigHash
+            c.hmacHash, c.sigHash, c.pkRsa, c.keySource, c.typeSim, c.salt, c.iv
         FROM cofre c
         WHERE c.id = ?
     """,
@@ -517,7 +539,8 @@ def decrypt_message_route():
     mensagem = None
 
     if resultado:
-        method, mensagem_id, hmacAuth, signDig, hmacHash, sigHash = resultado
+        #this pk_rsa is only for EDIT PURPOSES
+        method, mensagem_id, hmacAuth, signDig, hmacHash, sigHash, pk_rsa, key_source, type_sim , salt, iv = resultado
 
         row_mensagem = cursor.execute(
             """
@@ -547,9 +570,27 @@ def decrypt_message_route():
         if method == "rsa":
             mensagem = decrypt_message_rsa(conteudo_cifrado, secret)
         elif method == "random-key":
-            # mensagem = decrypt_message_symmetric(secret, conteudo_cifrado)
-            pass
+            if key_source == 'passChosen':
+                #pegar na palavra-passe que o user inseriu
+                salt = base64.b64decode(salt)
+                _, secretKey = deriveKey(secret, salt)
+            else:
+                #gerar pass random
+                try:
+                    secretKey = base64.b64decode(secret)
+                except Exception:
+                    return render_template('open_vault.html', error="The secret key is not valid")
 
+            #verificar qual o algoritmo simetrico
+            if type_sim == 'AES-256-CBC':
+                mensagem = decrypt_AES_CBC(conteudo_cifrado, secretKey, iv)
+            elif type_sim == 'AES-256-CTR':
+                mensagem = decrypt_AES_CTR(conteudo_cifrado, secretKey, iv)
+            elif type_sim == 'ChaCha20':
+                mensagem = decrypt_chacha20(conteudo_cifrado, secretKey, iv)
+            else:
+                return jsonify({"success": False, "error": "Type of symmetric algorithm not supported"}), 501            
+                
         if mensagem is None:
             return render_template(
                 "open_vault.html", error="Método de cifra não suportado."

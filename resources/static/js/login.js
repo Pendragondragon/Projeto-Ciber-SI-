@@ -41,7 +41,7 @@ document.getElementById('login-form').addEventListener('submit', function (event
         })
         .catch(error => {
             console.error('Error in login:', error);
-            alert('There was an error in login. Please try again later.');
+            mostrarNotificacao('There was an error in login. Please try again later.', 'error');
         });
 });
 

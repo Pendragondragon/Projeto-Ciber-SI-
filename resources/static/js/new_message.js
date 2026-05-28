@@ -1,6 +1,6 @@
 const url = "/message";
 
-function showRsaPopup(privateKey, vault_id, fallbackMessage) {
+function showRsaPopup(privateKey, vault_id, fallbackMessage, keyLabel = 'private key') {
     return new Promise((resolve) => {
         const overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4';
@@ -10,7 +10,7 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
 
         const title = document.createElement('h2');
         title.className = 'mb-3 text-xl font-semibold';
-        title.textContent = privateKey ? 'Keep your private key safe' : 'Private Key';
+        title.textContent = privateKey ? `Keep your ${keyLabel} safe` : 'Key';
 
         const idBadge = document.createElement('div');
         idBadge.className = 'mb-4 inline-block rounded border border-indigo-500/30 bg-indigo-500/10 px-2 py-1 text-xs font-mono font-bold tracking-wider text-indigo-400';
@@ -32,7 +32,7 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
         });
 
         if (privateKey) {
-            description.textContent = 'Keep this private key in a safe location. The key is required to open the vault.';
+            description.textContent = `Keep this ${keyLabel} in a safe location. The key is required to open the vault.`;
 
             const keyBox = document.createElement('textarea');
             keyBox.className = 'h-56 w-full rounded-md bg-gray-900 p-3 text-xs text-green-200 outline-none';
@@ -46,7 +46,7 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
             copyButton.addEventListener('click', async () => {
                 try {
                     await navigator.clipboard.writeText(privateKey);
-                    mostrarNotificacao('Private key copied!', 'success');
+                    mostrarNotificacao(`${keyLabel.charAt(0).toUpperCase() + keyLabel.slice(1)} copied!`, 'success');
                 } catch (error) {
                     mostrarNotificacao('It was not possible to copy the key', 'error');
                 }
@@ -61,23 +61,24 @@ function showRsaPopup(privateKey, vault_id, fallbackMessage) {
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = 'private_key.pem';
+                a.download = keyLabel === 'random key' ? 'random_key.txt' : 'private_key.pem';
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
-                mostrarNotificacao('Private key downloaded!', 'success');
+                mostrarNotificacao(`${keyLabel.charAt(0).toUpperCase() + keyLabel.slice(1)} downloaded!`, 'success');
             });
 
             actions.appendChild(copyButton);
             actions.appendChild(downloadButton);
             modal.appendChild(title);
-            modal.appendChild(idBadge); 
+            modal.appendChild(idBadge);
             modal.appendChild(description);
             modal.appendChild(keyBox);
         } else {
             description.textContent = fallbackMessage || 'Hope you have not lost your private key.';
             modal.appendChild(title);
+            modal.appendChild(idBadge);
             modal.appendChild(description);
         }
 
@@ -235,13 +236,18 @@ document.addEventListener("DOMContentLoaded", async () => {
             .then(data => {
                 if (data.success) {
                     spinner.classList.add("hidden");
-                    if (payload.method === 'rsa') {
-                        showRsaPopup(data.private_key, data.vault_id, 'Vault created successfully!').then(() => {
+                    const successMessage = data.vault_id
+                        ? `Vault created successfully! Vault id: #${data.vault_id}`
+                        : 'Vault created successfully!';
+
+                    if (data.private_key) {
+                        const keyLabel = payload.method === 'random-key' ? 'random key' : 'private key';
+                        showRsaPopup(data.private_key, data.vault_id, 'Vault created successfully!', keyLabel).then(() => {
                             window.location.href = "/deposit";
                         });
                     }
 
-                    mostrarNotificacao('Vault created successfully!', 'success');
+                    mostrarNotificacao(successMessage, 'success');
                 } else {
                     spinner.classList.add("hidden");
                     const mensagem = data.message || data.error || 'Invalid Values.';

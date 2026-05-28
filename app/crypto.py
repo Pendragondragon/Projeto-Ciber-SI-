@@ -6,6 +6,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import padding as asym_padding
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
 from cryptography.exceptions import InvalidKey
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -99,8 +100,9 @@ def verify_signature(signature, message, sig_hash):
     
 #pega na password e deriva de forma a ficar aleatorio e com tamanho maior
 #devolve a chave no formato certo e o salt usado no processo
-def deriveKey(key):
-    salt = os.urandom(16)
+def deriveKey(key, salt):
+    if salt == None:
+        salt = os.urandom(16)
     keyBytes = key.encode()
     
     kdf = PBKDF2HMAC(
@@ -112,7 +114,8 @@ def deriveKey(key):
 
     key = kdf.derive(keyBytes)
     return salt, key
-
+'''
+#em vez de verificar  vou deixar que o hmac falhe
 def verifyDerivedKey(salt, storedKey, insertedKey):
     password = insertedKey.encode()
 
@@ -128,7 +131,7 @@ def verifyDerivedKey(salt, storedKey, insertedKey):
         return True
     except InvalidKey:
         return False
-    
+'''    
 
 
 # Chave Simétrica (POR TESTETAR - NÃO USAR AINDA)
@@ -157,7 +160,7 @@ def aes256_cbc_encrypt(message, key, iv):
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(padded_message) + encryptor.finalize()
     
-    return ciphertext, iv, key
+    return ciphertext, iv
 
 def decrypt_AES_CBC(ciphertext, key, iv):
     decryptor = Cipher(algorithms.AES(key), modes.CBC(iv)).decryptor()
@@ -189,7 +192,7 @@ def aes256_ctr_encrypt(message, key, iv):
     encryptor = cipher.encryptor()
     ciphertext = encryptor.update(padded_message) + encryptor.finalize()
     
-    return ciphertext, iv, key
+    return ciphertext, iv
 
 def decrypt_AES_CTR(ciphertext, key, iv):
     decryptor = Cipher(algorithms.AES(key), modes.CTR(iv)).decryptor()
@@ -205,17 +208,21 @@ def decrypt_AES_CTR(ciphertext, key, iv):
 
 def encrypt_chacha20(message, key, iv):
     if iv is None:
-        iv = os.urandom(16)
+        iv = os.urandom(16) 
     if len(iv) != 16:
-        raise ValueError("CBC IV must be 16 bytes")
+        raise ValueError("Cc20 IV needs to be 16 bytes")
+
     algorithm = algorithms.ChaCha20(key, iv)
-    cipher = Cipher(algorithm, mode=None) # Stream ciphers não precisam de 'mode' externo
+    cipher = Cipher(algorithm, mode=None)
     encryptor = cipher.encryptor()
     
     ciphertext = encryptor.update(message.encode('utf-8'))
     return ciphertext, iv
 
 def decrypt_chacha20(ciphertext, key, iv):
+    if len(iv) != 16:
+        raise ValueError("Cc20 IV needs to be 16 bytes")
+        
     algorithm = algorithms.ChaCha20(key, iv)
     cipher = Cipher(algorithm, mode=None)
     decryptor = cipher.decryptor()
@@ -224,7 +231,6 @@ def decrypt_chacha20(ciphertext, key, iv):
     return plaintext.decode('utf-8')
 
 #RSA
-
 def generate_keys(bits: int) -> tuple[bytes, bytes]:
 
     public_key, private_key = rsa.newkeys(bits)
