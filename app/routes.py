@@ -1,8 +1,12 @@
 from main import app, get_db
 from flask import g, render_template, request, jsonify, redirect, url_for
 from flask_bcrypt import Bcrypt
-from services.auth_service import gerar_token_recuperacao, validar_token
-from services.email_service import enviar_email_recuperacao
+from services.auth_service import (
+    gerar_token_recuperacao,
+    validar_token,
+    gerar_delete_token,
+)
+from services.email_service import enviar_email_apagar_cofre, enviar_email_recuperacao
 import os
 from dotenv import load_dotenv
 import jwt
@@ -60,7 +64,7 @@ def request_reset():
     user = cursor.execute("SELECT * FROM user WHERE email = ?", (email,)).fetchone()
 
     if not user:
-        return jsonify({"success": False, "error": "Email not foundo"}), 404
+        return jsonify({"success": False, "error": "Email not found"}), 404
 
     from model.User import User
     user_obj = User(user[0], user[1], user[2], user[3])
@@ -616,60 +620,58 @@ def request_delete_vault():
     data = request.get_json()
 
     vault_id = data.get("vault_id")
-    email = data.get("email")
 
-    if not vault_id or not email:
-        return jsonify({
-            "success": False,
-            "error": "Missing data"
-        }), 400
+    if not vault_id:
+        return jsonify({"success": False, "error": "Missing data"}), 400
 
     db = get_db()
     cursor = db.cursor()
 
-    # procurar utilizador
+    token_cookie = request.cookies.get("token")
+    SECRET_KEY = os.getenv("SECRET_KEY")
+
+    if not token_cookie or not SECRET_KEY:
+        return jsonify({"success": False, "error": "Authentication required"}), 401
+
+    try:
+        decoded = jwt.decode(token_cookie, SECRET_KEY, algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return jsonify({"success": False, "error": "Invalid token"}), 401
+
+    email = decoded.get("email")
+
     user = cursor.execute(
         """
-        SELECT * FROM user
+        SELECT id, username, email
+        FROM user
         WHERE email = ?
         """,
-        (email,)
+        (email,),
     ).fetchone()
 
     if not user:
-        return jsonify({
-            "success": False,
-            "error": "User not found"
-        }), 404
+        return jsonify({"success": False, "error": "User not found"}), 404
 
-    # verificar se o cofre pertence ao utilizador
+    user_id = user[0]
+
+    if not user:
+        return jsonify({"success": False, "error": "User not found"}), 404
+
     vault = cursor.execute(
         """
-        SELECT * FROM cofre
-        WHERE id = ? AND utilizador_id = ?
+        SELECT id
+        FROM cofre
+        WHERE id = ?
+        AND utilizador_id = ?
         """,
-        (vault_id, user[0])
+        (vault_id, user_id),
     ).fetchone()
 
     if not vault:
-        return jsonify({
-            "success": False,
-            "error": "Vault not found"
-        }), 404
+        return jsonify({"success": False, "error": "Vault not found"}), 404
 
-    from model.User import User
+    token, expiration = gerar_delete_token()
 
-    user_obj = User(
-        user[0],
-        user[1],
-        user[2],
-        user[3]
-    )
-
-    # gerar token
-    token = gerar_token_recuperacao(user_obj)
-
-    # guardar token no cofre
     cursor.execute(
         """
         UPDATE cofre
@@ -677,31 +679,74 @@ def request_delete_vault():
             delete_token_expira = ?
         WHERE id = ?
         """,
-        (
-            token,
-            user_obj.reset_token_expira.isoformat(),
-            vault_id
-        )
+        (token, expiration.isoformat(), vault_id),
     )
 
     db.commit()
 
-    # enviar email
-    enviar_email_apagar_cofre(
-        user_obj,
-        vault_id,
-        token
-    )
+    class TempUser:
+        pass
 
-    return jsonify({
-        "success": True,
-        "message": "Confirmation email sent"
-    })
+    temp_user = TempUser()
+    temp_user.username = user[1]
+    temp_user.email = user[2]
+
+    enviar_email_apagar_cofre(temp_user, vault_id, token)
+
+    return jsonify({"success": True, "message": "Confirmation email sent"})
 
 
 @app.route("/delete-vault-confirm")
 def delete_vault_confirm_page():
-    return render_template("vault/delete_confirm.html")
+
+    token = request.args.get("token")
+    vault_id = request.args.get("vault_id")
+
+    if not token or not vault_id:
+        return "Invalid link", 400
+
+    db = get_db()
+    cursor = db.cursor()
+
+    vault = cursor.execute(
+        """
+        SELECT delete_token,
+                delete_token_expira
+        FROM cofre
+        WHERE id = ?
+        """,
+        (vault_id,),
+    ).fetchone()
+
+    if not vault:
+        return "Vault not found", 404
+
+    saved_token, expiration = vault
+
+    saved_token = str(saved_token).strip()
+    token = str(token).strip()
+
+    print("TOKEN URL:", token)
+    print("TOKEN BD:", saved_token)
+
+    if saved_token != token:
+        return "Invalid token", 400
+
+    if not expiration:
+        return "Invalid token", 400
+
+    try:
+        expiration_date = datetime.datetime.fromisoformat(expiration)
+    except:
+        return "Invalid token", 400
+
+    if datetime.datetime.now() > expiration_date:
+        return "Token expired", 400
+
+    print("TOKEN URL:", token)
+    print("TOKEN BD:", saved_token)
+
+    return render_template("delete_confirm.html")
 
 
 @app.route("/vault/delete-confirm", methods=["POST"])
@@ -713,10 +758,7 @@ def confirm_delete_vault():
     vault_id = data.get("vault_id")
 
     if not token or not vault_id:
-        return jsonify({
-            "success": False,
-            "error": "Missing token or vault id"
-        }), 400
+        return jsonify({"success": False, "error": "Missing token or vault id"}), 400
 
     db = get_db()
     cursor = db.cursor()
@@ -725,50 +767,35 @@ def confirm_delete_vault():
     vault = cursor.execute(
         """
         SELECT id,
-               delete_token,
-               delete_token_expira
+                delete_token,
+                delete_token_expira
         FROM cofre
         WHERE id = ?
         """,
-        (vault_id,)
+        (vault_id,),
     ).fetchone()
 
     if not vault:
-        return jsonify({
-            "success": False,
-            "error": "Vault not found"
-        }), 404
+        return jsonify({"success": False, "error": "Vault not found"}), 404
 
     vault_id_db, saved_token, expiration = vault
 
     # validar token
     if saved_token != token:
-        return jsonify({
-            "success": False,
-            "error": "Invalid token"
-        }), 400
+        return jsonify({"success": False, "error": "Invalid token"}), 400
 
     if not expiration:
-        return jsonify({
-            "success": False,
-            "error": "Invalid token"
-        }), 400
+        return jsonify({"success": False, "error": "Invalid token"}), 400
 
     # validar data
     try:
-        expiration_date = datetime.fromisoformat(expiration)
+        expiration_date = datetime.datetime.fromisoformat(expiration)
     except:
-        return jsonify({
-            "success": False,
-            "error": "Invalid token"
-        }), 400
+        return jsonify({"success": False, "error": "Invalid token"}), 400
 
     # verificar expiração
-    if datetime.now() > expiration_date:
-        return jsonify({
-            "success": False,
-            "error": "Token expired"
-        }), 400
+    if datetime.datetime.now() > expiration_date:
+        return jsonify({"success": False, "error": "Token expired"}), 400
 
     # apagar cofre
     cursor.execute(
@@ -776,12 +803,14 @@ def confirm_delete_vault():
         DELETE FROM cofre
         WHERE id = ? AND delete_token = ?
         """,
-        (vault_id, token)
+        (vault_id, token),
     )
 
     db.commit()
 
-    return jsonify({
-        "success": True,
-        "message": "Vault deleted successfully"
-    })
+    return jsonify({"success": True, "message": "Vault deleted successfully"})
+
+
+
+
+
