@@ -25,15 +25,16 @@ Before starting this application, make sure of having the following tools instal
   * sqlite-utils
 
 
-To create an environment
+To create an environment in [Visual Studio Code](https://code.visualstudio.com/) follow the following steps:
 ```bash
 $ python -m venv .venv
+$ source "PATH/.venv/bin/activate"
 ```
+Then press ctrl + shift + P,
+Select the option Python: Select Interpreter
+Later, choose Python (.venv)
 
-source "PATH/.venv/bin/activate"
-ctrl + shift + P
-Python: Select Interpreter
-Python (.venv)
+Once those steps are finished, you have an environment created to suport this project.
 
 
 ---
