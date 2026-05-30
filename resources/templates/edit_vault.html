@@ -1,0 +1,130 @@
+{% extends "navbar.html" %} {% block content %}
+<div class="mx-auto max-w-7xl px-2 py-8 sm:px-6 lg:px-8">
+  <form method="post" action="{{ url_for('edit_vault', vault_id=vault_id) }}">
+    <div class="space-y-12">
+      <div
+        id="loadingSpinner"
+        class="hidden fixed inset-0 flex items-center justify-center bg-black/50"
+      >
+        <div
+          class="h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-indigo-500"
+        ></div>
+      </div>
+
+      <div class="border-b border-white/10 pb-12">
+        <h1 class="text-3xl font-semibold text-white">Edit Message</h1>
+
+        {% if error %}
+        <div
+          class="mt-4 rounded-md border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+        >
+          {{ error }}
+        </div>
+        {% endif %}
+
+        <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+          <div class="sm:col-span-4">
+            <label for="title" class="block text-sm font-medium text-white"
+              >Title</label
+            >
+            <div class="mt-2">
+              <div
+                class="flex items-center rounded-md bg-white/5 pl-3 outline-1 -outline-offset-1 outline-white/10 focus-within:outline-2 focus-within:-outline-offset-2 focus-within:outline-indigo-500"
+              >
+                <input
+                  id="title"
+                  type="text"
+                  name="title"
+                  value="{{ title|default('') }}"
+                  class="block min-w-0 grow bg-transparent py-1.5 pr-3 pl-1 text-base text-white placeholder:text-gray-500 focus:outline-none sm:text-sm/6"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="col-span-full">
+            <label for="message" class="block text-sm font-medium text-white"
+              >Message</label
+            >
+            <div class="mt-2">
+              <textarea
+                id="message"
+                name="message"
+                rows="10"
+                maxlength="245"
+                placeholder="Write your message here to store in the vault..."
+                class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                required
+              >
+{{ message|default('') }}</textarea
+              >
+              <div class="char-counter">
+                <span id="current">0</span> / <span id="limit">245</span>
+              </div>
+            </div>
+          </div>
+
+          {% if needs_secret %}
+          <div class="col-span-full">
+            <label for="secret" class="block text-sm font-medium text-white">
+              Secret to open the vault
+            </label>
+            <div class="mt-2">
+              <textarea
+                id="secret"
+                name="secret"
+                rows="6"
+                placeholder="Paste the Base64 key, password, or full RSA PEM private key here"
+                class="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+              ></textarea>
+            </div>
+
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-white mb-2">
+                Upload Secret File
+              </label>
+
+              <label
+                for="secret_file"
+                class="cursor-pointer inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 transition-colors"
+              >
+                Choose File
+              </label>
+
+              <input
+                type="file"
+                id="secret_file"
+                accept=".txt,.pem,.key"
+                class="hidden"
+              />
+
+              <p id="file_name" class="mt-2 text-sm text-indigo-400 hidden"></p>
+
+              <p class="mt-2 text-xs text-gray-500">
+                Supported formats: .txt, .pem, .key
+              </p>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6 flex items-center justify-end gap-x-6">
+      <a
+        href="{{ url_for('deposit') }}"
+        class="text-sm font-semibold text-white hover:text-gray-300"
+        >Cancel</a
+      >
+      <button
+        id="createVault"
+        type="submit"
+        class="rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+      >
+        Save
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

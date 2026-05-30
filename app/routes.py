@@ -18,6 +18,9 @@ import base64
 
 bcrypt = Bcrypt(app)
 
+# guarda temporariamente o segredo usado para abrir cofres com chave derivada de password
+_vault_secret_cache = {}
+
 load_dotenv()
 
 # Decorador para proteger rotas que requerem autenticação
@@ -489,6 +492,8 @@ def decrypt_message_route():
     user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
     if not user:
         return render_template('open_vault.html', error="Invalid user.")
+
+    user_id = user[0]
     
     #ir buscar todos os dados necessários para a desencriptar
     resultado = cursor.execute("""
@@ -565,6 +570,9 @@ def decrypt_message_route():
     sig_bytes = base64.b64decode(signDig)
     sigVer = verify_signature(sig_bytes, mensagem, sigHash)
 
+    if method == "random-key" and key_source == "passChosen":
+        _vault_secret_cache[(user_id, int(cofre_id))] = secret
+
     return render_template(
         'open_result.html',
         vault_id=cofre_id,
@@ -574,13 +582,253 @@ def decrypt_message_route():
         message=mensagem   
     )
 
-@app.route("/vault/<int:vault_id>/edit")
+@app.route("/vault/<int:vault_id>/edit", methods=["GET", "POST"])
 @login_required
 def edit_vault(vault_id):
+    db = get_db()
+    cursor = db.cursor()
+
+    vault = cursor.execute(
+        """
+        SELECT mensagem_id,
+               utilizador_id,
+               tipoDeCifra,
+               keySource,
+               typeSim,
+               salt,
+               iv,
+               pkRsa,
+               hmacHash,
+               sigHash
+        FROM cofre
+        WHERE id = ?
+        """,
+        (vault_id,),
+    ).fetchone()
+
+    if not vault:
+        return render_template(
+            "open_result.html",
+            vault_id=vault_id,
+            hmac_ok=False,
+            sig_ok=False,
+            error="Vault not found!",
+        ), 404
+
+    mensagem_id, owner_id, method, key_source, type_sim, salt, iv, pk_rsa, hmac_hash, sig_hash = vault
+
+    current = getattr(g, "current_user", None)
+    if not current or "email" not in current:
+        return redirect(url_for("login"))
+
+    user = cursor.execute("SELECT id FROM user WHERE email = ?", (current.get("email"),)).fetchone()
+    if not user or user[0] != owner_id:
+        return render_template(
+            "open_result.html",
+            vault_id=vault_id,
+            hmac_ok=False,
+            sig_ok=False,
+            error="Forbidden: only the creator can edit this vault",
+        ), 403
+
+    if request.method == "GET":
+        title = request.args.get("title", "")
+        message = request.args.get("message", "")
+
+        if not title or not message:
+            return render_template(
+                "open_result.html",
+                vault_id=vault_id,
+                hmac_ok=False,
+                sig_ok=False,
+                error="Missing title or message to edit this vault.",
+            ), 400
+
+        return render_template(
+            "edit_vault.html",
+            vault_id=vault_id,
+            title=title,
+            message=message,
+            method=method,
+            needs_secret=(method == "random-key"),
+            key_source=key_source,
+            type_sim=type_sim,
+        )
+
+    title = request.form.get("title")
+    message = request.form.get("message")
+    secret = request.form.get("secret")
+
+    if not title or not message:
+        return render_template(
+            "edit_vault.html",
+            vault_id=vault_id,
+            title=title or "",
+            message=message or "",
+            method=method,
+            needs_secret=(method == "random-key"),
+            key_source=key_source,
+            type_sim=type_sim,
+            error="Title and message are required.",
+        ), 400
+
+    if method == "rsa":
+        if not pk_rsa:
+                rsa_row = cursor.execute(
+                    "SELECT pkRsa FROM rsaKey WHERE utilizador_id = ?",
+                    (owner_id,),
+                ).fetchone()
+
+                if rsa_row:
+                    pk_rsa = rsa_row[0]
+
+        if not pk_rsa:
+            return render_template(
+                "edit_vault.html",
+                vault_id=vault_id,
+                title=title,
+                message=message,
+                method=method,
+                needs_secret=False,
+                key_source=key_source,
+                type_sim=type_sim,
+                error="Public key not found for this vault.",
+            ), 500
+
+        cryptogram = encrypt_message_rsa(message, pk_rsa)
+        iv_value = None
+        salt_value = None
+    elif method == "random-key":
+        if not secret and key_source == "passChosen":
+            secret = _vault_secret_cache.get((owner_id, vault_id))
+
+        if not secret:
+            return render_template(
+                "edit_vault.html",
+                vault_id=vault_id,
+                title=title,
+                message=message,
+                method=method,
+                needs_secret=False,
+                key_source=key_source,
+                type_sim=type_sim,
+                error="Open the vault first so the password-based key can be reused.",
+            ), 400
+
+        if key_source == "passChosen":
+            if not salt:
+                return render_template(
+                    "edit_vault.html",
+                    vault_id=vault_id,
+                    title=title,
+                    message=message,
+                    method=method,
+                    needs_secret=True,
+                    key_source=key_source,
+                    type_sim=type_sim,
+                    error="Salt not found for this vault.",
+                ), 500
+
+            _, secretKey = deriveKey(secret, base64.b64decode(salt))
+            salt_value = salt
+        else:
+            try:
+                secretKey = base64.b64decode(secret)
+            except Exception:
+                return render_template(
+                    "edit_vault.html",
+                    vault_id=vault_id,
+                    title=title,
+                    message=message,
+                    method=method,
+                    needs_secret=True,
+                    key_source=key_source,
+                    type_sim=type_sim,
+                    error="The secret key is not valid.",
+                ), 400
+
+            salt_value = salt
+
+        if type_sim == "AES-256-CBC":
+            cryptogram, iv_value = aes256_cbc_encrypt(message, secretKey, None)
+        elif type_sim == "AES-256-CTR":
+            cryptogram, iv_value = aes256_ctr_encrypt(message, secretKey, None)
+        elif type_sim == "ChaCha20":
+            cryptogram, iv_value = encrypt_chacha20(message, secretKey, None)
+        else:
+            return render_template(
+                "edit_vault.html",
+                vault_id=vault_id,
+                title=title,
+                message=message,
+                method=method,
+                needs_secret=True,
+                key_source=key_source,
+                type_sim=type_sim,
+                error="Type of symmetric algorithm not supported.",
+            ), 501
+    else:
+        return render_template(
+            "edit_vault.html",
+            vault_id=vault_id,
+            title=title,
+            message=message,
+            method=method,
+            needs_secret=False,
+            key_source=key_source,
+            type_sim=type_sim,
+            error="Unsupported encryption method.",
+        ), 400
+
+    assinatura_b64 = base64.b64encode(sign_digitally(sig_hash, message)).decode("utf-8")
+    hmac_auth = HMAC_authentication(hmac_hash, cryptogram.encode() if isinstance(cryptogram, str) else cryptogram)
+
+    cursor.execute(
+        "UPDATE mensagem SET titulo = ?, conteudoCifrado = ? WHERE id = ?",
+        (title, cryptogram, mensagem_id),
+    )
+
+    if method == "rsa":
+        cursor.execute(
+            """
+            UPDATE cofre
+            SET codigoDeAutenticacao = ?,
+                assinaturaDigital = ?,
+                tipoDeCifra = ?,
+                hmacHash = ?,
+                sigHash = ?,
+                pkRsa = ?
+            WHERE id = ?
+            """,
+            (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, pk_rsa, vault_id),
+        )
+    else:
+        cursor.execute(
+            """
+            UPDATE cofre
+            SET codigoDeAutenticacao = ?,
+                assinaturaDigital = ?,
+                tipoDeCifra = ?,
+                hmacHash = ?,
+                sigHash = ?,
+                keySource = ?,
+                typeSim = ?,
+                salt = ?,
+                iv = ?
+            WHERE id = ?
+            """,
+            (hmac_auth, assinatura_b64, method, hmac_hash, sig_hash, key_source, type_sim, salt_value, iv_value, vault_id),
+        )
+
+    db.commit()
+
     return render_template(
-        "open_vault.html",
-        error="Vault editing is not implemented yet.",
+        "open_result.html",
         vault_id=vault_id,
+        hmac_ok=True,
+        sig_ok=True,
+        title=title,
+        message=message,
     )
 
 
@@ -590,8 +838,9 @@ def delete_vault(vault_id):
     db = get_db()
     cursor = db.cursor()
 
+    # obter cofre e verificar se existe
     row = cursor.execute(
-        "SELECT mensagem_id FROM cofre WHERE id = ?",
+        "SELECT mensagem_id, utilizador_id FROM cofre WHERE id = ?",
         (vault_id,),
     ).fetchone()
 
@@ -604,7 +853,33 @@ def delete_vault(vault_id):
             error="Vault not found!",
         )
 
-    mensagem_id = row[0]
+    mensagem_id, owner_id = row
+
+    # obter utilizador atual do token definido pelo decorador
+    current = getattr(g, 'current_user', None)
+    if not current or 'email' not in current:
+        return redirect(url_for('login'))
+
+    email = current.get('email')
+    user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
+    if not user:
+        return render_template(
+            "open_result.html",
+            vault_id=vault_id,
+            hmac_ok=False,
+            sig_ok=False,
+            error="User not found",
+        )
+
+    user_id = user[0]
+    if owner_id != user_id:
+        return render_template(
+            "open_result.html",
+            vault_id=vault_id,
+            hmac_ok=False,
+            sig_ok=False,
+            error="Forbidden: only the creator can delete this vault",
+        ), 403
 
     cursor.execute("DELETE FROM cofre WHERE id = ?", (vault_id,))
     cursor.execute("DELETE FROM mensagem WHERE id = ?", (mensagem_id,))
@@ -711,7 +986,8 @@ def delete_vault_confirm_page():
     vault = cursor.execute(
         """
         SELECT delete_token,
-                delete_token_expira
+                delete_token_expira,
+                utilizador_id
         FROM cofre
         WHERE id = ?
         """,
@@ -721,7 +997,7 @@ def delete_vault_confirm_page():
     if not vault:
         return "Vault not found", 404
 
-    saved_token, expiration = vault
+    saved_token, expiration, owner_id = vault
 
     saved_token = str(saved_token).strip()
     token = str(token).strip()
@@ -742,6 +1018,26 @@ def delete_vault_confirm_page():
 
     if datetime.datetime.now() > expiration_date:
         return "Token expired", 400
+
+    # exigir que o utilizador autenticado seja o criador do cofre
+    token_cookie = request.cookies.get('token')
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    if not token_cookie or not SECRET_KEY:
+        return redirect(url_for('login'))
+
+    try:
+        decoded = jwt.decode(token_cookie, SECRET_KEY, algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return redirect(url_for('login'))
+
+    email = decoded.get("email")
+    user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
+    if not user:
+        return redirect(url_for('login'))
+
+    user_id = user[0]
+    if owner_id != user_id:
+        return "Forbidden: only the creator can delete this vault", 403
 
     print("TOKEN URL:", token)
     print("TOKEN BD:", saved_token)
@@ -768,7 +1064,8 @@ def confirm_delete_vault():
         """
         SELECT id,
                 delete_token,
-                delete_token_expira
+                delete_token_expira,
+                utilizador_id
         FROM cofre
         WHERE id = ?
         """,
@@ -778,7 +1075,26 @@ def confirm_delete_vault():
     if not vault:
         return jsonify({"success": False, "error": "Vault not found"}), 404
 
-    vault_id_db, saved_token, expiration = vault
+    vault_id_db, saved_token, expiration, owner_id = vault
+
+    # exigir que o utilizador autenticado seja o criador do cofre
+    token_cookie = request.cookies.get('token')
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    if not token_cookie or not SECRET_KEY:
+        return jsonify({"success": False, "error": "Authentication required"}), 401
+    try:
+        decoded = jwt.decode(token_cookie, SECRET_KEY, algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return jsonify({"success": False, "error": "Invalid token"}), 401
+
+    email = decoded.get("email")
+    user = cursor.execute("SELECT id FROM user WHERE email = ?", (email,)).fetchone()
+    if not user:
+        return jsonify({"success": False, "error": "User not found"}), 404
+
+    user_id = user[0]
+    if owner_id != user_id:
+        return jsonify({"success": False, "error": "Forbidden: only the creator can delete this vault"}), 403
 
     # validar token
     if saved_token != token:
