@@ -33,4 +33,8 @@ mail = Mail(app)
 from app.routes import *
 
 if __name__ == "__main__":
-    app.run()
+    # app.run()
+    # Use adhoc SSL for development and a non-privileged port
+    app.run(host="127.0.0.1", port=5000, ssl_context='adhoc')
+
+
